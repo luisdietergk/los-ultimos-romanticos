@@ -24,13 +24,23 @@ export function Hero({ heroVideoUrl, taglineHtml }: { heroVideoUrl: string | nul
   }, []);
 
   useEffect(() => {
-    // Some mobile browsers block autoplay until a user gesture — retry once on first tap.
-    const retry = () => videoRef.current?.play().catch(() => {});
-    document.addEventListener("touchstart", retry, { once: true });
-    document.addEventListener("click", retry, { once: true });
+    const video = videoRef.current;
+    if (!video) return;
+    // iOS Safari only honors autoplay if `muted` is set as a real DOM
+    // property before the first play attempt — React's `muted` JSX prop
+    // doesn't reliably land in time, which is why the video was showing a
+    // native play button instead of autoplaying. Set it imperatively and
+    // kick off playback ourselves rather than waiting on the attribute.
+    video.muted = true;
+    video.defaultMuted = true;
+    const tryPlay = () => video.play().catch(() => {});
+    tryPlay();
+    // Some mobile browsers still block it outright — retry once on first tap.
+    document.addEventListener("touchstart", tryPlay, { once: true });
+    document.addEventListener("click", tryPlay, { once: true });
     return () => {
-      document.removeEventListener("touchstart", retry);
-      document.removeEventListener("click", retry);
+      document.removeEventListener("touchstart", tryPlay);
+      document.removeEventListener("click", tryPlay);
     };
   }, []);
 

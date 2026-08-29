@@ -236,7 +236,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
           aria-hidden
           className="pointer-events-none absolute inset-x-0 h-[16px]"
           style={{
-            top: "32px",
+            top: "44px",
             background: "linear-gradient(to bottom, #4c4746, #2a2726 26%, #141212 62%, #080707 100%)",
             boxShadow: "inset 0 1px 0 rgba(255,255,255,.15), 0 6px 10px rgba(0,0,0,.35)",
           }}
@@ -248,9 +248,18 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
               itemRefs.current[i] = el;
             }}
             onClick={() => handleOpen(i, p)}
-            className="absolute top-0 h-[560px] w-[252px] origin-top cursor-pointer will-change-transform"
+            className="absolute top-0 h-[440px] w-[252px] origin-top cursor-pointer will-change-transform"
           >
-            <div className="relative mt-1.5 h-[520px]">
+            {/* Box height is intentionally close to typical garment-photo
+                proportions (roughly 2:3 to 5:9) rather than tall — a much
+                taller box was letterboxing product photos far down inside
+                it (object-contain centers the image vertically when the box
+                is proportionally taller than the photo), which pushed each
+                photo's own hanger artwork ~60-90px below this rail instead
+                of lining up with it. Keeping the box close to the photo's
+                real aspect ratio means the image fills it top-to-bottom
+                with no such gap. */}
+            <div className="relative mt-1.5 h-[370px]">
               {p.photoUrl ? (
                 <Image
                   src={p.photoUrl}
