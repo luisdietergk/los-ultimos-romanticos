@@ -20,6 +20,14 @@ import {
   getKitImages,
 } from "@/lib/site-data";
 
+// Forces this page to render fresh on every request instead of being baked
+// into a static snapshot at build time — without this, Next.js's production
+// build can statically cache a page that has no other signal telling it to
+// stay dynamic, so admin edits would never show up for visitors after the
+// first deploy (this doesn't happen in `next dev`, which always renders
+// live regardless, only in a real production build like the one Vercel runs).
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const [settings, matches, roster, fullRoster, allGoals, shop, kits] = await Promise.all([
     getSiteSettings(),
