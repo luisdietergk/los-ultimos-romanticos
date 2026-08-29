@@ -195,7 +195,7 @@ function PlayerCard({
         <div className="pointer-events-none absolute -left-1 top-0.5 z-0 font-serif text-[74px] leading-[0.8] tracking-tight text-neutral-400 opacity-50 tabular-nums">
           {player.dorsal}
         </div>
-        <div className="absolute inset-x-3.5 bottom-0 top-[26px] z-[1] overflow-hidden bg-neutral-200">
+        <div className={`absolute inset-x-3.5 bottom-0 top-[26px] z-[1] overflow-hidden ${player.photoUrl ? "" : "bg-neutral-200"}`}>
           {player.photoUrl ? (
             <Image src={player.photoUrl} alt={player.apodo ?? player.name} fill className="object-cover object-[center_top]" sizes="200px" />
           ) : (

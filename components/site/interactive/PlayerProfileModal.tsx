@@ -43,7 +43,7 @@ export function PlayerProfileModal({
                 <Dialog.Close className="absolute right-3 top-1 text-2xl leading-none">×</Dialog.Close>
                 <div className="grid grid-cols-[82px_1fr] gap-3.5">
                   <Dialog.Title asChild>
-                    <div className="relative h-24 w-[82px] flex-none overflow-hidden bg-neutral-200">
+                    <div className={`relative h-24 w-[82px] flex-none overflow-hidden ${p.photoUrl ? "" : "bg-neutral-200"}`}>
                       {p.photoUrl && (
                         <Image src={p.photoUrl} alt={p.name} fill className="object-cover object-[center_top]" sizes="82px" />
                       )}
