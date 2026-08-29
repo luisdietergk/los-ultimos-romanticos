@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { updateKit } from "@/lib/actions/kits";
 import { KIT_TYPES } from "@/lib/types";
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 export default async function KitsPage() {
   const kits = await prisma.kitImage.findMany();
@@ -23,15 +24,14 @@ export default async function KitsPage() {
             >
               <input type="hidden" name="id" value={kit.id} />
 
-              <div className="flex flex-col items-start gap-2">
-                {kit.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={kit.imageUrl} alt={kit.title} className="h-32 w-24 object-cover" />
-                ) : (
-                  <div className="h-32 w-24 bg-neutral-200" />
-                )}
-                <input type="file" name="image" accept="image/*" className="w-full text-xs" />
-              </div>
+              <MediaUploadField
+                name="imageUrl"
+                category="kits"
+                currentUrl={kit.imageUrl}
+                accept="image/*"
+                kind="image"
+                previewClassName="h-32 w-24 object-cover"
+              />
 
               <div className="flex flex-col items-start gap-3">
                 <div className="text-xs font-bold uppercase tracking-wider text-neutral-600">{type}</div>

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { updateSettings } from "@/lib/actions/settings";
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 export default async function SettingsPage() {
   const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
@@ -67,26 +68,38 @@ export default async function SettingsPage() {
 
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Video del hero</label>
-          {settings?.heroVideoUrl && <video src={settings.heroVideoUrl} className="mb-2 h-32" controls />}
-          <input type="file" name="heroVideo" accept="video/*" className="block text-sm" />
+          <MediaUploadField
+            name="heroVideoUrl"
+            category="site"
+            currentUrl={settings?.heroVideoUrl ?? null}
+            accept="video/*"
+            kind="video"
+            previewClassName="h-32"
+          />
         </div>
 
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Patrón de fondo</label>
-          {settings?.patternUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={settings.patternUrl} alt="Patrón de fondo" className="mb-2 h-16 w-16 object-cover" />
-          )}
-          <input type="file" name="pattern" accept="image/*" className="block text-sm" />
+          <MediaUploadField
+            name="patternUrl"
+            category="site"
+            currentUrl={settings?.patternUrl ?? null}
+            accept="image/*"
+            kind="image"
+            previewClassName="h-16 w-16 object-cover"
+          />
         </div>
 
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Escudo del equipo</label>
-          {settings?.teamCrestUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={settings.teamCrestUrl} alt="Escudo del equipo" className="mb-2 h-16 w-16 object-contain" />
-          )}
-          <input type="file" name="teamCrest" accept="image/*" className="block text-sm" />
+          <MediaUploadField
+            name="teamCrestUrl"
+            category="site"
+            currentUrl={settings?.teamCrestUrl ?? null}
+            accept="image/*"
+            kind="image"
+            previewClassName="h-16 w-16 object-contain"
+          />
         </div>
 
         <div>

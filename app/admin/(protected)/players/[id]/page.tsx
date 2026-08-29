@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { playerGoalCount } from "@/lib/derived";
 import { updatePlayer } from "@/lib/actions/players";
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 export default async function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -119,11 +120,14 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
 
         <div className="sm:col-span-2">
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Foto</label>
-          {player.photoUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={player.photoUrl} alt={player.name} className="mb-2 h-24 w-24 object-cover" />
-          )}
-          <input type="file" name="photo" accept="image/*" className="block text-sm" />
+          <MediaUploadField
+            name="photoUrl"
+            category="players"
+            currentUrl={player.photoUrl}
+            accept="image/*"
+            kind="image"
+            previewClassName="h-24 w-24 object-cover"
+          />
         </div>
 
         <div className="sm:col-span-2">

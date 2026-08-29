@@ -2,22 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { saveUploadedFile } from "@/lib/storage";
-import { requireString, fileOrNull } from "./util";
+import { requireString, nullableString } from "./util";
 
 export async function updateKit(formData: FormData): Promise<void> {
   const id = requireString(formData, "id");
   const title = requireString(formData, "title").trim();
-
-  const image = fileOrNull(formData, "image");
-  const imageUrl = image ? (await saveUploadedFile(image, "kits")).url : undefined;
+  const imageUrl = nullableString(formData, "imageUrl");
 
   await prisma.kitImage.update({
     where: { id },
-    data: {
-      title,
-      ...(imageUrl ? { imageUrl } : {}),
-    },
+    data: { title, imageUrl },
   });
   redirect("/admin/kits");
 }

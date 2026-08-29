@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { updateProduct } from "@/lib/actions/shop";
+import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 export default async function ShopPage() {
   const products = await prisma.shopProduct.findMany({ orderBy: { sortOrder: "asc" } });
@@ -18,15 +19,14 @@ export default async function ShopPage() {
           >
             <input type="hidden" name="id" value={p.id} />
 
-            <div className="flex flex-col items-start gap-2">
-              {p.photoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={p.photoUrl} alt={p.name} className="h-24 w-24 object-cover" />
-              ) : (
-                <div className="h-24 w-24 bg-neutral-200" />
-              )}
-              <input type="file" name="photo" accept="image/*" className="w-full text-xs" />
-            </div>
+            <MediaUploadField
+              name="photoUrl"
+              category="shop"
+              currentUrl={p.photoUrl}
+              accept="image/*"
+              kind="image"
+              previewClassName="h-24 w-24 object-cover"
+            />
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>

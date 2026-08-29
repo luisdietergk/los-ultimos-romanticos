@@ -2,8 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { saveUploadedFile } from "@/lib/storage";
-import { requireString, requireInt, fileOrNull } from "./util";
+import { requireString, requireInt, nullableString } from "./util";
 
 export async function updateProduct(formData: FormData): Promise<void> {
   const id = requireString(formData, "id");
@@ -11,19 +10,11 @@ export async function updateProduct(formData: FormData): Promise<void> {
   const sizesCsv = requireString(formData, "sizesCsv").trim();
   const priceMxn = requireInt(formData, "priceMxn");
   const description = requireString(formData, "description").trim();
-
-  const photo = fileOrNull(formData, "photo");
-  const photoUrl = photo ? (await saveUploadedFile(photo, "shop")).url : undefined;
+  const photoUrl = nullableString(formData, "photoUrl");
 
   await prisma.shopProduct.update({
     where: { id },
-    data: {
-      name,
-      sizesCsv,
-      priceMxn,
-      description,
-      ...(photoUrl ? { photoUrl } : {}),
-    },
+    data: { name, sizesCsv, priceMxn, description, photoUrl },
   });
   redirect("/admin/shop");
 }

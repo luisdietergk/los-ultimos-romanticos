@@ -2,8 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { saveUploadedFile } from "@/lib/storage";
-import { requireString, nullableString, intOrDefault, fileOrNull } from "./util";
+import { requireString, nullableString, intOrDefault } from "./util";
 
 /** Dorsal, name, position, nationality, apodo, quote, description, pj,
  * assists, and photo are all real stored columns — editable here. Goal
@@ -21,8 +20,7 @@ export async function updatePlayer(formData: FormData): Promise<void> {
   const pj = intOrDefault(formData, "pj", 0);
   const assists = intOrDefault(formData, "assists", 0);
 
-  const photo = fileOrNull(formData, "photo");
-  const photoUrl = photo ? (await saveUploadedFile(photo, "players")).url : undefined;
+  const photoUrl = nullableString(formData, "photoUrl");
 
   await prisma.player.update({
     where: { id },
@@ -36,7 +34,7 @@ export async function updatePlayer(formData: FormData): Promise<void> {
       description,
       pj,
       assists,
-      ...(photoUrl ? { photoUrl } : {}),
+      photoUrl,
     },
   });
   redirect("/admin/players");

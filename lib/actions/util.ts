@@ -45,16 +45,3 @@ export function floatOrNull(formData: FormData, field: string): number | null {
 export function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v));
 }
-
-/** Only present when the <input type="file"> actually has a selected file —
- * an empty file input still shows up in FormData as a zero-byte File (name
- * is usually "", but don't rely on that alone: a real upload is never
- * zero bytes, so treat any zero-byte file as "no upload" regardless of
- * name — otherwise a resubmitted form with an untouched file input can
- * silently overwrite a real photo with an empty file). */
-export function fileOrNull(formData: FormData, field: string): File | null {
-  const v = formData.get(field);
-  if (!(v instanceof File)) return null;
-  if (v.size === 0) return null;
-  return v;
-}

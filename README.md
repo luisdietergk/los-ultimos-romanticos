@@ -32,7 +32,7 @@ Visit `http://localhost:3000` for the public site, `http://localhost:3000/admin`
 ## Data & storage
 
 - **Database**: Postgres via Prisma (`prisma/schema.prisma`). Match/goal/kit/status fields are real Postgres `enum`s (see `lib/types.ts` for the re-exported TS types).
-- **Uploads**: `lib/storage.ts` uses Vercel Blob when `BLOB_READ_WRITE_TOKEN` is set, otherwise writes to `public/uploads/<category>/` for local dev. Every admin upload form goes through this one function.
+- **Uploads**: admin photo/video fields (`components/admin/MediaUploadField.tsx`) upload straight from the browser to Vercel Blob — `/api/admin/upload` only issues a short-lived client token (auth-gated), so the file itself never passes through a Server Action or serverless function body, avoiding Vercel's ~4.5MB request size ceiling.
 - **Auth**: Auth.js (NextAuth v5), Credentials provider against the `AdminUser` table (bcrypt-hashed passwords). `/admin/**` (except `/admin/login`) is gated by `app/admin/(protected)/layout.tsx`.
 - **Seeding**: `prisma/seed.ts` is idempotent — it upserts `SiteSettings`/`AdminUser` every run, but only seeds the roster/matches/shop/kits once (checks `player.count()` first), so it's safe to run automatically on every deploy without duplicating data or overwriting edits made through `/admin`.
 
