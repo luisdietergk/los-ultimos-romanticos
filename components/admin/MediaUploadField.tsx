@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, type ChangeEvent } from "react";
-import { upload } from "@vercel/blob/client";
+import { put } from "@vercel/blob/client";
 
 /** File input for admin forms that uploads straight from the browser to
  * Vercel Blob (via /api/admin/upload for the token) instead of sending the
@@ -35,11 +35,27 @@ export function MediaUploadField({
     if (!file) return;
     setStatus("uploading");
     setErrorMsg("");
+    const pathname = `${category}/${file.name}`;
     try {
-      const blob = await upload(`${category}/${file.name}`, file, {
-        access: "public",
-        handleUploadUrl: "/api/admin/upload",
+      // Done as two explicit steps (instead of the SDK's all-in-one `upload()`
+      // helper) so a failure here shows its *real* reason — `upload()` only
+      // ever throws a generic "failed to retrieve token" regardless of what
+      // the server actually said, which makes this impossible to diagnose
+      // from a user's screenshot alone.
+      const tokenRes = await fetch("/api/admin/upload", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          type: "blob.generate-client-token",
+          payload: { pathname, clientPayload: null, multipart: false },
+        }),
       });
+      const tokenBody: { clientToken?: string; error?: string } | null = await tokenRes.json().catch(() => null);
+      if (!tokenRes.ok || !tokenBody?.clientToken) {
+        throw new Error(tokenBody?.error || `El servidor rechazó la subida (código ${tokenRes.status}).`);
+      }
+
+      const blob = await put(pathname, file, { access: "public", token: tokenBody.clientToken });
       setUrl(blob.url);
       setStatus("idle");
     } catch (err) {
