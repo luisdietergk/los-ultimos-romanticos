@@ -37,7 +37,7 @@ export async function updateMatch(formData: FormData): Promise<void> {
 
   await prisma.match.update({
     where: { id: matchId },
-    data: { kickoffAt, venue, status },
+    data: { kickoffAt, venue, status: status as MatchStatus },
   });
   redirect("/admin/matches");
 }
@@ -67,7 +67,7 @@ async function resolveGoalFields(formData: FormData) {
     scorerName = requireString(formData, "scorerName").trim();
   }
 
-  return { matchId, minute, team, playerId, scorerName, note, shotX, shotY, goalX, goalY };
+  return { matchId, minute, team: team as GoalTeam, playerId, scorerName, note, shotX, shotY, goalX, goalY };
 }
 
 export async function addGoal(formData: FormData): Promise<void> {

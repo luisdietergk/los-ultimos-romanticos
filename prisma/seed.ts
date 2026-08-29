@@ -1,22 +1,31 @@
-// One-time migration: pulls the real assets and structured content out of
-// the Claude Design prototype bundle (../../project relative to this file)
-// and seeds the local dev database + local asset storage. Run via:
-//   pnpm exec tsx prisma/seed.ts
+// One-time data seed, safe to re-run on every deploy (idempotent — see
+// `alreadySeeded` guard below). Unlike the original migration script, this
+// does NOT read from the sibling `../../project` design bundle — it points
+// directly at the real assets already committed under `public/uploads/slots/`
+// and `public/uploads/site/`, so it works in any environment that just has
+// this repo checked out (e.g. a Vercel build), not only this sandbox.
+//
+// Run via: pnpm exec tsx prisma/seed.ts
 // (also wired as `prisma.seed` in package.json, so `prisma db seed` works)
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { readFile } from "fs/promises";
+import { existsSync } from "fs";
 import path from "path";
-import { saveAsset, saveDataUri } from "../lib/storage";
 import { generateSeasonFixtures } from "../lib/schedule";
 import { ROSTER, RIVALS18, SHOP, HISTORIA, SAMPLE_GOAL_SETS } from "./seed-data";
 
 const prisma = new PrismaClient();
 
-const BUNDLE_DIR = path.join(__dirname, "..", "..", "project");
-const SLOTS_JSON = path.join(BUNDLE_DIR, ".image-slots.state.json");
-const UPLOADS_DIR = path.join(BUNDLE_DIR, "uploads");
+const SLOTS_DIR = path.join(__dirname, "..", "public", "uploads", "slots");
+const SITE_DIR = path.join(__dirname, "..", "public", "uploads", "site");
+
+/** Returns the public URL for a slot image if the file is actually
+ * committed to the repo, else null (renders as an empty upload slot on the
+ * public site / admin instead of a broken image). */
+function slotUrl(filename: string): string | null {
+  return existsSync(path.join(SLOTS_DIR, filename)) ? `/uploads/slots/${filename}` : null;
+}
 
 function slugify(s: string): string {
   return s
@@ -28,55 +37,46 @@ function slugify(s: string): string {
 }
 
 async function main() {
-  console.log("Reading .image-slots.state.json ...");
-  const raw = await readFile(SLOTS_JSON, "utf-8");
-  const slots: Record<string, { u: string }> = JSON.parse(raw);
-
-  const slotUrl = new Map<string, string>();
-  for (const [key, value] of Object.entries(slots)) {
-    const dataUri = value.u;
-    if (!dataUri || !dataUri.startsWith("data:")) continue;
-    const ext = dataUri.startsWith("data:image/webp") ? ".webp" : dataUri.startsWith("data:image/png") ? ".png" : ".jpg";
-    const { url } = await saveDataUri(dataUri, "slots", `${key}${ext}`);
-    slotUrl.set(key, url);
-  }
-  console.log(`Migrated ${slotUrl.size} images from .image-slots.state.json`);
-
-  // --- SiteSettings singleton -------------------------------------------------
-  console.log("Copying hero video + background pattern ...");
-  const heroVideoBuf = await readFile(path.join(UPLOADS_DIR, "shot-1-20260826-2149.mp4"));
-  const { url: heroVideoUrl } = await saveAsset(heroVideoBuf, "site", "hero-video.mp4");
-  const patternBuf = await readFile(path.join(UPLOADS_DIR, "patron.png"));
-  const { url: patternUrl } = await saveAsset(patternBuf, "site", "pattern.png");
-
-  // The team's own crest IS a real, finished logo already captured in the
-  // prototype (header/footer/match slots) — not a missing placeholder.
-  const teamCrestUrl = slotUrl.get("lur-escudo-match") ?? slotUrl.get("lur-escudo-header") ?? null;
+  // --- SiteSettings singleton (safe to upsert every run) ---------------------
+  const heroVideoUrl = existsSync(path.join(SITE_DIR, "hero-video.mp4")) ? "/uploads/site/hero-video.mp4" : null;
+  const patternUrl = existsSync(path.join(SITE_DIR, "pattern.png")) ? "/uploads/site/pattern.png" : null;
+  const teamCrestUrl = slotUrl("lur-escudo-match.webp") ?? slotUrl("lur-escudo-header.webp");
 
   await prisma.siteSettings.upsert({
     where: { id: 1 },
-    create: {
-      id: 1,
-      heroVideoUrl,
-      patternUrl,
-      teamCrestUrl,
-      historiaP1: HISTORIA.p1,
-      historiaP2: HISTORIA.p2,
-    },
-    update: {
-      heroVideoUrl,
-      patternUrl,
-      teamCrestUrl,
-      historiaP1: HISTORIA.p1,
-      historiaP2: HISTORIA.p2,
-    },
+    create: { id: 1, heroVideoUrl, patternUrl, teamCrestUrl, historiaP1: HISTORIA.p1, historiaP2: HISTORIA.p2 },
+    update: { heroVideoUrl, patternUrl, teamCrestUrl, historiaP1: HISTORIA.p1, historiaP2: HISTORIA.p2 },
   });
+
+  // --- Admin user (safe to upsert every run) ----------------------------------
+  const adminEmail = process.env.ADMIN_SEED_EMAIL;
+  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
+  if (adminEmail && adminPassword) {
+    const passwordHash = await bcrypt.hash(adminPassword, 10);
+    await prisma.adminUser.upsert({
+      where: { email: adminEmail },
+      create: { email: adminEmail, passwordHash },
+      update: { passwordHash },
+    });
+    console.log(`Admin user ready: ${adminEmail}`);
+  } else {
+    console.warn("ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD not set — skipping admin user seed.");
+  }
+
+  // --- Everything below only runs once: roster/matches/shop/kits are the -----
+  // --- team's real editable content, so re-seeding on every deploy would  -----
+  // --- either duplicate rows or stomp on edits made through /admin.       -----
+  const alreadySeeded = (await prisma.player.count()) > 0;
+  if (alreadySeeded) {
+    console.log("Roster already seeded — skipping matches/players/shop/kits.");
+    return;
+  }
 
   // --- Rivals ------------------------------------------------------------------
   console.log("Seeding rivals ...");
-  const rivalByName = new Map<string, string>(); // name -> Rival.id
+  const rivalByName = new Map<string, string>();
   for (const name of RIVALS18) {
-    const crestUrl = slotUrl.get(`lur-escudo-rival-${slugify(name)}`) ?? null;
+    const crestUrl = slotUrl(`lur-escudo-rival-${slugify(name)}.webp`);
     const rival = await prisma.rival.upsert({
       where: { name },
       create: { name, crestUrl },
@@ -89,7 +89,7 @@ async function main() {
   console.log("Seeding roster ...");
   const playerIdByName = new Map<string, string>();
   for (const [i, p] of ROSTER.entries()) {
-    const photoUrl = slotUrl.get(`lur-foto-${p.slotId}`) ?? null;
+    const photoUrl = slotUrl(`lur-foto-${p.slotId}.webp`);
     const player = await prisma.player.create({
       data: {
         dorsal: p.dorsal,
@@ -117,33 +117,16 @@ async function main() {
     const rivalName = isRegularSeason ? RIVALS18[fx.jornada - 1] : "POR DEFINIR";
     let rivalId = rivalByName.get(rivalName) ?? null;
     if (!rivalId) {
-      const rival = await prisma.rival.upsert({
-        where: { name: rivalName },
-        create: { name: rivalName },
-        update: {},
-      });
+      const rival = await prisma.rival.upsert({ where: { name: rivalName }, create: { name: rivalName }, update: {} });
       rivalId = rival.id;
       rivalByName.set(rivalName, rivalId);
     }
-    const crestOverrideUrl = slotUrl.get(`lur-escudo-m-j${fx.jornada}`) ?? null;
-    const heroCrestUrl = slotUrl.get(`lur-escudo-hero-j${fx.jornada}`) ?? null;
+    const crestOverrideUrl = slotUrl(`lur-escudo-m-j${fx.jornada}.webp`);
+    const heroCrestUrl = slotUrl(`lur-escudo-hero-j${fx.jornada}.webp`);
     const match = await prisma.match.upsert({
       where: { jornada: fx.jornada },
-      create: {
-        jornada: fx.jornada,
-        jornadaLabel: fx.jornadaLabel,
-        rivalId,
-        kickoffAt: fx.kickoffAt,
-        crestOverrideUrl,
-        heroCrestUrl,
-      },
-      update: {
-        jornadaLabel: fx.jornadaLabel,
-        rivalId,
-        kickoffAt: fx.kickoffAt,
-        crestOverrideUrl,
-        heroCrestUrl,
-      },
+      create: { jornada: fx.jornada, jornadaLabel: fx.jornadaLabel, rivalId, kickoffAt: fx.kickoffAt, crestOverrideUrl, heroCrestUrl },
+      update: { jornadaLabel: fx.jornadaLabel, rivalId, kickoffAt: fx.kickoffAt, crestOverrideUrl, heroCrestUrl },
     });
     matchIdByJornada.set(fx.jornada, match.id);
   }
@@ -151,11 +134,8 @@ async function main() {
   // --- Sample goals (jornadas 1-4, ported from the prototype's own example data) ---
   console.log("Seeding sample goals for jornadas 1-4 ...");
   for (const [i, goalSet] of SAMPLE_GOAL_SETS.entries()) {
-    const jornada = i + 1;
-    const matchId = matchIdByJornada.get(jornada);
+    const matchId = matchIdByJornada.get(i + 1);
     if (!matchId) continue;
-    const existing = await prisma.goal.count({ where: { matchId } });
-    if (existing > 0) continue; // don't duplicate on re-seed
     for (const g of goalSet) {
       await prisma.goal.create({
         data: {
@@ -177,52 +157,28 @@ async function main() {
   // --- Shop products ---------------------------------------------------------
   console.log("Seeding shop products ...");
   for (const [i, item] of SHOP.entries()) {
-    const photoUrl = slotUrl.get(`lur-shop-${item.slotId}-main`) ?? null;
+    const photoUrl = slotUrl(`lur-shop-${item.slotId}-main.webp`);
     await prisma.shopProduct.upsert({
       where: { id: item.slotId },
-      create: {
-        id: item.slotId,
-        name: item.name,
-        sizesCsv: item.sizesCsv,
-        priceMxn: item.priceMxn,
-        description: item.description,
-        photoUrl,
-        sortOrder: i,
-      },
-      update: {
-        photoUrl,
-      },
+      create: { id: item.slotId, name: item.name, sizesCsv: item.sizesCsv, priceMxn: item.priceMxn, description: item.description, photoUrl, sortOrder: i },
+      update: { photoUrl },
     });
   }
 
   // --- Kit images --------------------------------------------------------------
   console.log("Seeding kit images ...");
-  const kits: { type: string; title: string; slot: string }[] = [
+  const kits: { type: "LOCAL" | "VISITA" | "PORTERO"; title: string; slot: string }[] = [
     { type: "LOCAL", title: "LOCAL", slot: "lur-kit-local" },
     { type: "VISITA", title: "VISITANTE", slot: "lur-kit-visita" },
     { type: "PORTERO", title: "PORTERO", slot: "lur-kit-portero" },
   ];
   for (const k of kits) {
+    const imageUrl = slotUrl(`${k.slot}.webp`);
     await prisma.kitImage.upsert({
       where: { type: k.type },
-      create: { type: k.type, title: k.title, imageUrl: slotUrl.get(k.slot) ?? null },
-      update: { imageUrl: slotUrl.get(k.slot) ?? null },
+      create: { type: k.type, title: k.title, imageUrl },
+      update: { imageUrl },
     });
-  }
-
-  // --- Admin user ----------------------------------------------------------
-  const adminEmail = process.env.ADMIN_SEED_EMAIL;
-  const adminPassword = process.env.ADMIN_SEED_PASSWORD;
-  if (adminEmail && adminPassword) {
-    console.log(`Seeding admin user ${adminEmail} ...`);
-    const passwordHash = await bcrypt.hash(adminPassword, 10);
-    await prisma.adminUser.upsert({
-      where: { email: adminEmail },
-      create: { email: adminEmail, passwordHash },
-      update: { passwordHash },
-    });
-  } else {
-    console.warn("ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD not set — skipping admin user seed.");
   }
 
   console.log("Seed complete.");

@@ -1,11 +1,10 @@
-// String-union "enums" — SQLite has no native enum support, so these are
-// validated in TypeScript instead of at the Prisma schema level. Moving to
-// Postgres later can promote these to real `enum` blocks without changing
-// any call site, since the string values are identical.
+// Re-exports of Prisma's generated enum types, plus one small lookup table.
+// (Postgres has native enum support, so these are real `enum` blocks in
+// schema.prisma — this file just gives the rest of the app a stable import
+// path that doesn't care whether it's reading a Prisma-generated type.)
 
-export type MatchStatus = "SCHEDULED" | "CANCELLED";
-export type GoalTeam = "LUR" | "RIVAL";
-export type KitType = "LOCAL" | "VISITA" | "PORTERO";
+export type { MatchStatus, GoalTeam, KitType } from "@prisma/client";
+import type { KitType } from "@prisma/client";
 
 export const KIT_TYPES: { type: KitType; title: string }[] = [
   { type: "LOCAL", title: "LOCAL" },
