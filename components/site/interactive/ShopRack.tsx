@@ -66,6 +66,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
   const n = Math.max(1, products.length);
 
   const stageRef = useRef<HTMLDivElement>(null);
+  const railRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const posRef = useRef(0); // `rpos`
@@ -82,8 +83,20 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
 
   const layout = useCallback(() => {
     const stage = stageRef.current;
+    const rail = railRef.current;
     if (!stage) return;
     const g = rackGeom(stage.clientWidth);
+    // The rail is a wide static bar, but the items it "hangs" from follow a
+    // sloped line (y = TY0 + x*SLOPE, per item x). Rotating the bar by the
+    // slope's angle and anchoring it at the same y the hero item sits at
+    // (x = g.HERO) makes the rail's drawn line coincide with that formula
+    // instead of sitting flat while the items themselves lean across it.
+    if (rail) {
+      const angleDeg = Math.atan(g.SLOPE) * (180 / Math.PI);
+      const railY = g.TY0 + g.HERO * g.SLOPE;
+      rail.style.top = `${railY}px`;
+      rail.style.transform = `rotate(${angleDeg.toFixed(3)}deg)`;
+    }
     const elapsed = (performance.now() - startTimeRef.current) / 1000;
     for (let i = 0; i < products.length; i++) {
       const node = itemRefs.current[i];
@@ -233,8 +246,9 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
         className="relative mt-5 h-[640px] touch-pan-y select-none overflow-hidden cursor-grab"
       >
         <div
+          ref={railRef}
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 h-[16px]"
+          className="pointer-events-none absolute inset-x-0 h-[16px] origin-center"
           style={{
             top: "44px",
             background: "linear-gradient(to bottom, #4c4746, #2a2726 26%, #141212 62%, #080707 100%)",

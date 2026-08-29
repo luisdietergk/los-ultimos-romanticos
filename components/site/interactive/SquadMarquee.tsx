@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
 import { playerGoalCount, type DerivedGoal } from "@/lib/derived";
 import type { FullPlayer } from "../Plantilla";
@@ -20,6 +20,7 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
   const trackRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
   const pausedRef = useRef(false);
+  const draggedRef = useRef(false);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [selected, setSelected] = useState<FullPlayer | null>(null);
   const [showFull, setShowFull] = useState(false);
@@ -62,16 +63,73 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
     []
   );
 
+  // The auto-scroll above only ever *paused* on touch/pointerdown — it never
+  // let the row follow the user's finger, so a swipe just froze it in place
+  // for a few seconds instead of moving anything, which read as "scroll
+  // doesn't work". This adds real dragging (ported the same way ShopRack's
+  // rack drag works): pointer capture is deferred until the drag threshold
+  // is crossed so a plain tap still reaches each card's onClick.
+  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const container = e.currentTarget;
+    const track = trackRef.current;
+    if (!track) return;
+    const half = track.scrollWidth / 2;
+    if (half <= 0) return;
+    pause();
+    const pointerId = e.pointerId;
+    let captured = false;
+    const startX = e.clientX;
+    const startOffset = offsetRef.current;
+
+    const onMove = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      if (!captured && Math.abs(dx) > 5) {
+        draggedRef.current = true;
+        container.setPointerCapture(pointerId);
+        captured = true;
+      }
+      if (!captured) return;
+      let next = startOffset - dx;
+      next = ((next % half) + half) % half;
+      offsetRef.current = next;
+      track.style.transform = `translateX(${-next}px)`;
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (captured) container.releasePointerCapture(pointerId);
+      if (draggedRef.current) {
+        setTimeout(() => {
+          draggedRef.current = false;
+        }, 80);
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  };
+
   if (roster.length === 0) return null;
 
   const doubled = [...roster, ...roster];
 
   return (
     <>
-      <div className="mt-1 overflow-hidden py-[30px]" onPointerDown={pause} onTouchStart={pause}>
+      <div
+        className="mt-1 touch-pan-y select-none overflow-hidden py-[30px] cursor-grab"
+        onPointerDown={onPointerDown}
+      >
         <div ref={trackRef} className="flex will-change-transform">
           {doubled.map((p, i) => (
-            <PlayerCard key={`${p.id}-${i}`} player={p} allGoals={allGoals} onOpen={() => setSelected(p)} />
+            <PlayerCard
+              key={`${p.id}-${i}`}
+              player={p}
+              allGoals={allGoals}
+              onOpen={() => {
+                if (!draggedRef.current) setSelected(p);
+              }}
+            />
           ))}
         </div>
       </div>
