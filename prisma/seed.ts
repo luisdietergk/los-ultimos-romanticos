@@ -63,6 +63,30 @@ async function main() {
     console.warn("ADMIN_SEED_EMAIL/ADMIN_SEED_PASSWORD not set — skipping admin user seed.");
   }
 
+  // --- Default shop photos (safe to run every deploy) -------------------------
+  // Unlike the roster/shop/kits seed below, this runs on every deploy — including
+  // against a database that was already seeded — so committing a new default
+  // photo here reaches production without going through /admin. It only ever
+  // sets a photo when the product doesn't have one yet, so it can never
+  // clobber a photo someone already set (via /admin or a previous backfill).
+  const SHOP_DEFAULT_PHOTOS: Record<string, string> = {
+    s1: "s1-jersey-local.png",
+    s2: "s2-jersey-visitante.png",
+    s3: "s3-jersey-portero.png",
+    s6: "s6-chamarra-rompevientos.png",
+  };
+  const SHOP_DEFAULTS_DIR = path.join(__dirname, "..", "public", "uploads", "shop-defaults");
+  for (const [slotId, filename] of Object.entries(SHOP_DEFAULT_PHOTOS)) {
+    if (!existsSync(path.join(SHOP_DEFAULTS_DIR, filename))) continue;
+    const product = await prisma.shopProduct.findUnique({ where: { id: slotId } });
+    if (!product || product.photoUrl) continue;
+    await prisma.shopProduct.update({
+      where: { id: slotId },
+      data: { photoUrl: `/uploads/shop-defaults/${filename}` },
+    });
+    console.log(`Backfilled default photo for shop product "${slotId}".`);
+  }
+
   // --- Everything below only runs once: roster/matches/shop/kits are the -----
   // --- team's real editable content, so re-seeding on every deploy would  -----
   // --- either duplicate rows or stomp on edits made through /admin.       -----
