@@ -1,0 +1,171 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { playerGoalCount, type DerivedGoal } from "@/lib/derived";
+import type { FullPlayer } from "../Plantilla";
+import { PlayerProfileModal } from "./PlayerProfileModal";
+
+const SPEED_PX_PER_MS = 0.034; // ~ the prototype's 0.34px/frame at 60fps
+const RESUME_DELAY_MS = 4500;
+
+/** The `#plantilla` squad row: a continuously auto-scrolling card marquee
+ * (roster rendered twice back-to-back, translated by hand with
+ * requestAnimationFrame and wrapped by exactly one list-length on cycle
+ * completion — ported from the prototype's `startMarquee()`/`pauseMarquee()`,
+ * Los Ultimos Romanticos.dc.html:1712-1737, but driving a CSS transform
+ * instead of native `scrollLeft`), a "ver plantilla completa" toggle to a
+ * static full-roster list, and the tap-to-open player profile modal. */
+export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGoals: DerivedGoal[] }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const offsetRef = useRef(0);
+  const pausedRef = useRef(false);
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const [selected, setSelected] = useState<FullPlayer | null>(null);
+  const [showFull, setShowFull] = useState(false);
+
+  const pause = useCallback(() => {
+    pausedRef.current = true;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = setTimeout(() => {
+      pausedRef.current = false;
+    }, RESUME_DELAY_MS);
+  }, []);
+
+  useEffect(() => {
+    if (roster.length === 0) return;
+    let raf = 0;
+    let last = 0;
+    const step = (t: number) => {
+      raf = requestAnimationFrame(step);
+      const track = trackRef.current;
+      if (!track || pausedRef.current || showFull) {
+        last = t;
+        return;
+      }
+      const dt = last ? Math.min(50, t - last) : 16.7;
+      last = t;
+      const half = track.scrollWidth / 2;
+      if (half <= 0) return;
+      offsetRef.current += SPEED_PX_PER_MS * dt;
+      if (offsetRef.current >= half) offsetRef.current -= half;
+      track.style.transform = `translateX(${-offsetRef.current}px)`;
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [roster.length, showFull]);
+
+  useEffect(
+    () => () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    },
+    []
+  );
+
+  if (roster.length === 0) return null;
+
+  const doubled = [...roster, ...roster];
+
+  return (
+    <>
+      <div className="mt-1 overflow-hidden py-[30px]" onPointerDown={pause} onTouchStart={pause}>
+        <div ref={trackRef} className="flex will-change-transform">
+          {doubled.map((p, i) => (
+            <PlayerCard key={`${p.id}-${i}`} player={p} allGoals={allGoals} onOpen={() => setSelected(p)} />
+          ))}
+        </div>
+      </div>
+
+      <div className="px-6 pb-1 lg:px-16">
+        <button
+          type="button"
+          onClick={() => setShowFull((v) => !v)}
+          className="flex w-full items-center justify-between border-2 border-ink bg-transparent px-[18px] py-4 text-[11px] font-extrabold uppercase tracking-[0.16em] text-ink"
+        >
+          {showFull ? "VER MENOS" : "VER PLANTILLA COMPLETA"}
+          <svg width="20" height="12" viewBox="0 0 20 12" fill="none" stroke="currentColor" strokeWidth="2" className={showFull ? "rotate-180" : ""}>
+            <path d="M1 6h16M12 1l5 5-5 5" />
+          </svg>
+        </button>
+
+        {showFull && (
+          <div className="mt-1">
+            {roster.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setSelected(p)}
+                className="grid w-full grid-cols-[26px_1fr_auto] items-center gap-3 border-b border-ink/15 py-3.5 text-left"
+              >
+                <span className="text-sm font-black tabular-nums text-neutral-500">{p.dorsal}</span>
+                <span className="min-w-0">
+                  <span className="block truncate text-[13px] font-extrabold uppercase tracking-[0.02em]">{p.name}</span>
+                  <span className="mt-1 block text-[9.5px] font-bold uppercase tracking-[0.12em] text-neutral-600">{p.position}</span>
+                </span>
+                <span className="whitespace-nowrap text-[10.5px] font-bold tracking-[0.08em] text-neutral-700 tabular-nums">
+                  {p.pj} PJ · {playerGoalCount(p.id, allGoals)} G · {p.assists} A
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <PlayerProfileModal player={selected} allGoals={allGoals} onClose={() => setSelected(null)} />
+    </>
+  );
+}
+
+function PlayerCard({
+  player,
+  allGoals,
+  onOpen,
+}: {
+  player: FullPlayer;
+  allGoals: DerivedGoal[];
+  onOpen: () => void;
+}) {
+  const goals = playerGoalCount(player.id, allGoals);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="relative w-[236px] flex-none border-l border-ink/15 px-4 pb-1 pt-3.5 text-left"
+    >
+      <div className="relative h-[232px] overflow-hidden">
+        <div className="pointer-events-none absolute -left-1 top-0.5 z-0 font-serif text-[74px] leading-[0.8] tracking-tight text-neutral-400 opacity-50 tabular-nums">
+          {player.dorsal}
+        </div>
+        <div className="absolute inset-x-3.5 bottom-0 top-[26px] z-[1] overflow-hidden bg-neutral-200">
+          {player.photoUrl ? (
+            <Image src={player.photoUrl} alt={player.apodo ?? player.name} fill className="object-cover object-[center_top]" sizes="200px" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center border border-dashed border-neutral-500 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-600">
+              Sin foto
+            </div>
+          )}
+        </div>
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-11"
+          style={{ background: "linear-gradient(to top, var(--color-cream), transparent)" }}
+        />
+      </div>
+
+      <div className="my-3.5 flex items-center gap-1.5">
+        <span className="h-px flex-1 bg-neutral-400" />
+        <span className="h-[5px] w-[5px] flex-none rotate-45 bg-accent" />
+        <span className="h-px flex-1 bg-neutral-400" />
+      </div>
+
+      <div className="text-[19px] font-black uppercase leading-none tracking-[-0.01em]">{player.name}</div>
+      <div className="mt-2.5 text-[9.5px] font-extrabold uppercase tracking-[0.16em] text-neutral-600">{player.position}</div>
+      <div className="mt-3 min-h-[24px] font-serif text-base italic leading-[1.2] text-accent-hover">{player.apodo}</div>
+      <div className="mt-1 flex items-baseline gap-3 text-[11px] font-bold tracking-[0.1em] text-neutral-700 tabular-nums">
+        <span>{player.pj} PJ</span>
+        <span>{goals} G</span>
+        <span>{player.assists} A</span>
+      </div>
+    </button>
+  );
+}

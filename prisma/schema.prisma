@@ -1,0 +1,115 @@
+// Los Últimos Románticos — data model.
+//
+// Local dev runs on SQLite (no Postgres/docker available in this sandbox).
+// SQLite has no native enum support, so fields that would be Postgres enums
+// (MatchStatus, GoalTeam, KitType) are plain String columns instead, with the
+// allowed values validated in TypeScript (see lib/types.ts). To move to
+// Postgres for production: change `provider` below to "postgresql", point
+// DATABASE_URL at a real Postgres instance (e.g. Neon), and optionally
+// convert those String columns to real `enum` blocks — no other schema
+// changes needed.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model SiteSettings {
+  id           Int      @id @default(1)
+  heroVideoUrl String?
+  patternUrl   String?
+  teamCrestUrl String?
+  taglineHtml  String   @default("Por amor al juego,<br>por amor a lo nuestro.")
+  historiaP1   String   @default("")
+  historiaP2   String   @default("")
+  ligaNombre   String   @default("LIGA ROMÁNTICA CDT")
+  seasonYear   Int      @default(2026)
+  updatedAt    DateTime @updatedAt
+}
+
+model Rival {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  crestUrl String?
+  matches  Match[]
+}
+
+model Match {
+  id               String   @id @default(cuid())
+  jornada          Int      @unique
+  jornadaLabel     String
+  rivalId          String
+  rival            Rival    @relation(fields: [rivalId], references: [id])
+  crestOverrideUrl String?
+  heroCrestUrl     String?
+  kickoffAt        DateTime
+  venue            String   @default("CDT")
+  status           String   @default("SCHEDULED") // SCHEDULED | CANCELLED
+  goals            Goal[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Goal {
+  id         String   @id @default(cuid())
+  matchId    String
+  match      Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  minute     Int
+  team       String // LUR | RIVAL
+  playerId   String?
+  player     Player?  @relation(fields: [playerId], references: [id])
+  scorerName String
+  note       String?
+  shotX      Float?
+  shotY      Float?
+  goalX      Float?
+  goalY      Float?
+  createdAt  DateTime @default(now())
+
+  @@index([matchId])
+  @@index([playerId])
+}
+
+model Player {
+  id          String  @id @default(cuid())
+  dorsal      String
+  name        String
+  position    String
+  nationality String  @default("México")
+  apodo       String?
+  quote       String?
+  description String?
+  pj          Int     @default(0)
+  assists     Int     @default(0)
+  photoUrl    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+  goals       Goal[]
+}
+
+model ShopProduct {
+  id          String  @id @default(cuid())
+  name        String
+  sizesCsv    String  @default("S,M,L,XL")
+  priceMxn    Int
+  description String
+  photoUrl    String?
+  sortOrder   Int     @default(0)
+}
+
+model KitImage {
+  id       String  @id @default(cuid())
+  type     String  @unique // LOCAL | VISITA | PORTERO
+  title    String
+  imageUrl String?
+}
+
+model AdminUser {
+  id           String @id @default(cuid())
+  email        String @unique
+  passwordHash String
+}
