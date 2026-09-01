@@ -8,6 +8,7 @@ export interface ShopProduct {
   priceMxn: number;
   description: string;
   photoUrl: string | null;
+  detailImageUrls: string[];
   sortOrder: number;
 }
 

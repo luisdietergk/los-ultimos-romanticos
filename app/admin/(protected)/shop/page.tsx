@@ -2,6 +2,31 @@ import { prisma } from "@/lib/db";
 import { updateProduct, createProduct } from "@/lib/actions/shop";
 import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
+// Matches DETAIL_SLOTS in lib/actions/shop.ts — the public detail sheet's
+// gallery shows the main photo plus these three detail shots.
+const DETAIL_SLOTS = [1, 2, 3];
+
+function DetailImageFields({ detailImageUrls }: { detailImageUrls: string[] }) {
+  return (
+    <div className="sm:col-span-2">
+      <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Fotos de detalle (galería)</label>
+      <div className="flex flex-wrap gap-3">
+        {DETAIL_SLOTS.map((i) => (
+          <MediaUploadField
+            key={i}
+            name={`detail${i}`}
+            category="shop-detail"
+            currentUrl={detailImageUrls[i - 1] ?? null}
+            accept="image/*"
+            kind="image"
+            previewClassName="h-20 w-20 object-cover"
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function ShopPage() {
   const products = await prisma.shopProduct.findMany({ orderBy: { sortOrder: "asc" } });
 
@@ -51,6 +76,7 @@ export default async function ShopPage() {
               <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Descripción</label>
               <textarea name="description" rows={2} required className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm" />
             </div>
+            <DetailImageFields detailImageUrls={[]} />
             <div className="sm:col-span-2">
               <button type="submit" className="bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-cream hover:bg-accent-hover">
                 Agregar
@@ -118,6 +144,7 @@ export default async function ShopPage() {
                   className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
                 />
               </div>
+              <DetailImageFields detailImageUrls={p.detailImageUrls} />
               <div className="sm:col-span-2">
                 <button type="submit" className="bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-cream hover:bg-accent-hover">
                   Guardar

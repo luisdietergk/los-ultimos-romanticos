@@ -100,13 +100,14 @@ model Player {
 }
 
 model ShopProduct {
-  id          String  @id @default(cuid())
-  name        String
-  sizesCsv    String  @default("S,M,L,XL")
-  priceMxn    Int
-  description String
-  photoUrl    String?
-  sortOrder   Int     @default(0)
+  id               String   @id @default(cuid())
+  name             String
+  sizesCsv         String   @default("S,M,L,XL")
+  priceMxn         Int
+  description      String
+  photoUrl         String?
+  detailImageUrls  String[] @default([])
+  sortOrder        Int      @default(0)
 }
 
 model KitImage {
