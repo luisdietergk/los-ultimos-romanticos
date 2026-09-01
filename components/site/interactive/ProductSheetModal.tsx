@@ -132,59 +132,57 @@ export function ProductSheetModal({
                   </button>
                 </div>
 
-                <div>
-                  <div
-                    className="relative mx-auto h-[400px] w-full max-w-[340px] lg:h-[520px] lg:max-w-[420px]"
-                    // Only the main photo (gallery index 0) is the same
-                    // element the rack thumbnail represents, so only it gets
-                    // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
-                    style={{ viewTransitionName: product && activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
-                  >
-                    {gallery[activeImage] && (
-                      <Image
-                        src={gallery[activeImage]}
-                        alt={product.name}
-                        fill
-                        sizes="320px"
-                        className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
-                      />
-                    )}
-                  </div>
-
-                  {gallery.length > 1 && (
-                    <div className="mt-6 flex items-start justify-center gap-3">
-                      <div className="flex flex-none flex-col gap-2.5 pt-1.5">
-                        {gallery.map((_, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setActiveImage(i)}
-                            className={`text-left text-[10px] font-extrabold tracking-[0.1em] ${
-                              i === activeImage ? "border-b-2 border-accent text-accent" : "text-neutral-400"
-                            }`}
-                          >
-                            {String(i + 1).padStart(2, "0")}
-                          </button>
-                        ))}
-                      </div>
-                      <div className="grid flex-1 grid-cols-4 gap-2">
-                        {gallery.map((url, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => setActiveImage(i)}
-                            className={`relative h-16 flex-none overflow-hidden border ${
-                              i === activeImage ? "border-ink" : "border-neutral-300"
-                            }`}
-                          >
-                            <Image src={url} alt="" fill sizes="80px" className="object-cover" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                <div
+                  className="relative mx-auto h-[400px] w-full max-w-[340px] lg:h-[520px] lg:max-w-[420px]"
+                  // Only the main photo (gallery index 0) is the same
+                  // element the rack thumbnail represents, so only it gets
+                  // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
+                  style={{ viewTransitionName: product && activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
+                >
+                  {gallery[activeImage] && (
+                    <Image
+                      src={gallery[activeImage]}
+                      alt={product.name}
+                      fill
+                      sizes="420px"
+                      className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
+                    />
                   )}
                 </div>
               </div>
+
+              {gallery.length > 1 && (
+                <div className="mt-8 flex items-start gap-4">
+                  <div className="flex flex-none flex-col gap-3 pt-1.5">
+                    {gallery.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setActiveImage(i)}
+                        className={`text-left text-[11px] font-extrabold tracking-[0.1em] ${
+                          i === activeImage ? "border-b-2 border-accent text-accent" : "text-neutral-400"
+                        }`}
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
+                    {gallery.map((url, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setActiveImage(i)}
+                        className={`relative aspect-square overflow-hidden border-2 ${
+                          i === activeImage ? "border-ink" : "border-neutral-300"
+                        }`}
+                      >
+                        <Image src={url} alt="" fill sizes="160px" className="object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="mt-8">
                 <div className="text-[9.5px] font-extrabold uppercase tracking-[0.2em]">TALLA</div>
