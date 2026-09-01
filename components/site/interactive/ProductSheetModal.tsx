@@ -95,7 +95,7 @@ export function ProductSheetModal({
                 ×
               </Dialog.Close>
 
-              <div className="grid grid-cols-[1fr_1.2fr] items-start gap-4 lg:gap-16">
+              <div className="grid grid-cols-[0.85fr_1.4fr] items-start gap-3 lg:gap-16">
                 <div>
                   <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
@@ -134,7 +134,7 @@ export function ProductSheetModal({
 
                 <div>
                   <div
-                    className="relative mx-auto h-[360px] w-full max-w-[288px] lg:h-[480px] lg:max-w-[384px]"
+                    className="relative mx-auto h-[400px] w-full max-w-[340px] lg:h-[520px] lg:max-w-[420px]"
                     // Only the main photo (gallery index 0) is the same
                     // element the rack thumbnail represents, so only it gets
                     // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
