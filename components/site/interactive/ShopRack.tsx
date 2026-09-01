@@ -81,22 +81,43 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
+  // Which single product's rack photo is allowed to carry a
+  // view-transition-name right now. Only ever one product at a time (or
+  // none) — every other item's name must stay undefined, always, even
+  // outside of a transition: the View Transitions API tracks *any* element
+  // that has a name at snapshot time as its own independently-animated
+  // group, so if every rack photo kept a permanent unique name, opening one
+  // product would still cross-fade all the *other* untouched photos too
+  // (each fading out on its own, right where it sits) — which is exactly
+  // the "other jerseys hang around" bug this avoids.
+  const [transitionProductId, setTransitionProductId] = useState<string | null>(null);
 
   // Opening/closing the product sheet goes through the browser's View
   // Transitions API when available, so the tapped photo (view-transition-name
   // set below, and again on the modal's own hero image) morphs smoothly
   // between its rack position and the sheet's hero position instead of the
-  // sheet just appearing. `flushSync` forces the state update to commit
-  // synchronously inside the transition callback, which the API requires to
-  // capture the "before"/"after" DOM snapshots correctly. Unsupported
-  // browsers (no startViewTransition) just get the plain, instant state
-  // change — this is pure progressive enhancement, nothing depends on it.
+  // sheet just appearing. `flushSync` forces each state update to commit
+  // synchronously, which the API requires to capture the "before"/"after"
+  // DOM snapshots correctly. Unsupported browsers (no startViewTransition)
+  // just get the plain, instant state change — pure progressive enhancement.
   const setOpenIdWithTransition = useCallback((id: string | null) => {
     const withTransitions = typeof document !== "undefined" && "startViewTransition" in document;
-    if (withTransitions) {
-      document.startViewTransition(() => flushSync(() => setOpenId(id)));
-    } else {
+    if (!withTransitions) {
       setOpenId(id);
+      return;
+    }
+    if (id !== null) {
+      // The browser snapshots the "old" DOM synchronously the instant
+      // startViewTransition is called (before its callback ever runs), so
+      // the rack item needs to already have claimed the name *before* that
+      // call — flushed here as its own separate update, ahead of time.
+      flushSync(() => setTransitionProductId(id));
+    }
+    const transition = document.startViewTransition(() => flushSync(() => setOpenId(id)));
+    if (id === null) {
+      // Closing: only release the name after the reverse morph finishes
+      // playing, so the rack item has it back in time for the "new" snapshot.
+      transition.finished.finally(() => setTransitionProductId(null));
     }
   }, []);
 
@@ -297,8 +318,12 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
               // Claimed by the product sheet's hero image while it's open for
               // this product (see setOpenIdWithTransition above) — releasing
               // it here is what lets the View Transitions API match the two
-              // elements up and morph between them.
-              style={{ viewTransitionName: openId === p.id ? undefined : `shop-photo-${p.id}` }}
+              // elements up and morph between them. Every other product must
+              // stay nameless at all times (see transitionProductId above).
+              style={{
+                viewTransitionName:
+                  p.id === transitionProductId && openId !== p.id ? `shop-photo-${p.id}` : undefined,
+              }}
             >
               {p.photoUrl ? (
                 <Image

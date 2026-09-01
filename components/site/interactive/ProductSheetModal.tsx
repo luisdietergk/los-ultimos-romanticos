@@ -95,19 +95,21 @@ export function ProductSheetModal({
                 ×
               </Dialog.Close>
 
-              <div className="lg:grid lg:grid-cols-[1fr_1.15fr] lg:items-start lg:gap-16">
+              <div className="grid grid-cols-[1fr_1.2fr] items-start gap-4 lg:gap-16">
                 <div>
                   <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
                   <Dialog.Title asChild>
-                    <h2 className="mt-3 font-serif text-[32px] uppercase leading-[0.95] lg:text-[42px]">
+                    <h2 className="mt-3 font-serif text-[22px] uppercase leading-[0.95] sm:text-[32px] lg:text-[42px]">
                       {product.name}
                     </h2>
                   </Dialog.Title>
                   <div className="my-4 h-1 w-[70px] bg-accent" />
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-[28px] leading-none text-accent">${product.priceMxn}</span>
+                    <span className="font-serif text-[22px] leading-none text-accent sm:text-[28px]">
+                      ${product.priceMxn}
+                    </span>
                     <span className="text-[10px] font-extrabold tracking-[0.12em] text-neutral-600">MXN</span>
                   </div>
                   <p className="mt-4 text-[13px] leading-[1.7] text-neutral-700">{product.description}</p>
@@ -130,9 +132,9 @@ export function ProductSheetModal({
                   </button>
                 </div>
 
-                <div className="mt-8 lg:mt-0">
+                <div>
                   <div
-                    className="relative mx-auto h-[300px] w-[240px] lg:h-[400px] lg:w-[320px]"
+                    className="relative mx-auto h-[360px] w-full max-w-[288px] lg:h-[480px] lg:max-w-[384px]"
                     // Only the main photo (gallery index 0) is the same
                     // element the rack thumbnail represents, so only it gets
                     // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
