@@ -93,7 +93,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
     // instead of sitting flat while the items themselves lean across it.
     if (rail) {
       const angleDeg = Math.atan(g.SLOPE) * (180 / Math.PI);
-      const railY = g.TY0 + g.HERO * g.SLOPE - 5;
+      const railY = g.TY0 + g.HERO * g.SLOPE;
       rail.style.top = `${railY}px`;
       rail.style.transform = `rotate(${angleDeg.toFixed(3)}deg)`;
     }
