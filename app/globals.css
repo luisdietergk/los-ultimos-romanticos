@@ -73,9 +73,16 @@ h1, h2, h3, h4 {
 
 /* Slightly slower/gentler than the browser's default (250ms) for the shop
    rack's tap-to-open photo transition (view-transition-name is set per
-   product in ShopRack.tsx/ProductSheetModal.tsx) — applies to every named
-   view transition on the page, which today is only this one. */
+   product in ShopRack.tsx/ProductSheetModal.tsx). */
 ::view-transition-group(*) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* `root` is the browser's own name for the whole-page old/new snapshot — the
+   rule above was slowing that crossfade down too, which is why every other
+   rack photo lingered on screen for the same 420ms instead of just
+   disappearing. This (more specific, so it wins) snaps the rest of the page
+   away immediately, leaving only the tapped photo's named group animating. */
+::view-transition-group(root) {
+  animation-duration: 1ms;
 }
