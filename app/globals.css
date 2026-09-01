@@ -70,3 +70,12 @@ h1, h2, h3, h4 {
 
 @keyframes podios-open { from { height: 0 } to { height: var(--radix-collapsible-content-height) } }
 @keyframes podios-close { from { height: var(--radix-collapsible-content-height) } to { height: 0 } }
+
+/* Slightly slower/gentler than the browser's default (250ms) for the shop
+   rack's tap-to-open photo transition (view-transition-name is set per
+   product in ShopRack.tsx/ProductSheetModal.tsx) — applies to every named
+   view transition on the page, which today is only this one. */
+::view-transition-group(*) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}

@@ -47,15 +47,18 @@ export function ProductSheetModal({
   const [size, setSize] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState(0);
   const [galleryForProductId, setGalleryForProductId] = useState<string | null>(null);
+  const [favorited, setFavorited] = useState(false);
   const open = product != null;
 
-  // Reset the selected gallery image when a different product opens — done
-  // during render (React's documented pattern for "adjust state when a prop
-  // changes") rather than in an effect, since a useEffect setState here would
-  // cause an extra cascading render for no benefit.
+  // Reset the selected gallery image (and favorite toggle) when a different
+  // product opens — done during render (React's documented pattern for
+  // "adjust state when a prop changes") rather than in an effect, since a
+  // useEffect setState here would cause an extra cascading render for no
+  // benefit.
   if (product && product.id !== galleryForProductId) {
     setGalleryForProductId(product.id);
     setActiveImage(0);
+    setFavorited(false);
   }
 
   const gallery = product ? [product.photoUrl, ...product.detailImageUrls].filter((u): u is string => !!u) : [];
@@ -108,10 +111,33 @@ export function ProductSheetModal({
                     <span className="text-[10px] font-extrabold tracking-[0.12em] text-neutral-600">MXN</span>
                   </div>
                   <p className="mt-4 text-[13px] leading-[1.7] text-neutral-700">{product.description}</p>
+                  <button
+                    type="button"
+                    onClick={() => setFavorited((v) => !v)}
+                    className="mt-5 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-ink"
+                  >
+                    <svg
+                      width="17"
+                      height="17"
+                      viewBox="0 0 24 24"
+                      fill={favorited ? "var(--color-accent)" : "none"}
+                      stroke={favorited ? "var(--color-accent)" : "currentColor"}
+                      strokeWidth="1.8"
+                    >
+                      <path d="M12 20.6S3.6 14.6 3.6 9.1A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.4 2.7c0 5.5-8.4 11.5-8.4 11.5z" />
+                    </svg>
+                    {favorited ? "EN FAVORITOS" : "AÑADIR A FAVORITOS"}
+                  </button>
                 </div>
 
                 <div className="mt-8 lg:mt-0">
-                  <div className="relative mx-auto h-[300px] w-[240px] lg:h-[400px] lg:w-[320px]">
+                  <div
+                    className="relative mx-auto h-[300px] w-[240px] lg:h-[400px] lg:w-[320px]"
+                    // Only the main photo (gallery index 0) is the same
+                    // element the rack thumbnail represents, so only it gets
+                    // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
+                    style={{ viewTransitionName: product && activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
+                  >
                     {gallery[activeImage] && (
                       <Image
                         src={gallery[activeImage]}

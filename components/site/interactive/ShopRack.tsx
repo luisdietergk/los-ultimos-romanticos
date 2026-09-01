@@ -7,6 +7,7 @@ import {
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import { flushSync } from "react-dom";
 import Image from "next/image";
 import type { ShopProduct } from "../Tienda";
 import { ProductSheetModal } from "./ProductSheetModal";
@@ -80,6 +81,24 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  // Opening/closing the product sheet goes through the browser's View
+  // Transitions API when available, so the tapped photo (view-transition-name
+  // set below, and again on the modal's own hero image) morphs smoothly
+  // between its rack position and the sheet's hero position instead of the
+  // sheet just appearing. `flushSync` forces the state update to commit
+  // synchronously inside the transition callback, which the API requires to
+  // capture the "before"/"after" DOM snapshots correctly. Unsupported
+  // browsers (no startViewTransition) just get the plain, instant state
+  // change — this is pure progressive enhancement, nothing depends on it.
+  const setOpenIdWithTransition = useCallback((id: string | null) => {
+    const withTransitions = typeof document !== "undefined" && "startViewTransition" in document;
+    if (withTransitions) {
+      document.startViewTransition(() => flushSync(() => setOpenId(id)));
+    } else {
+      setOpenId(id);
+    }
+  }, []);
 
   const layout = useCallback(() => {
     const stage = stageRef.current;
@@ -235,7 +254,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
   const handleOpen = (i: number, product: ShopProduct) => {
     if (draggedRef.current) return;
     if (i !== heroIndex(posRef.current, n)) glideTo(i);
-    setOpenId(product.id);
+    setOpenIdWithTransition(product.id);
   };
 
   return (
@@ -273,7 +292,14 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
                 of lining up with it. Keeping the box close to the photo's
                 real aspect ratio means the image fills it top-to-bottom
                 with no such gap. */}
-            <div className="relative mt-1.5 h-[370px]">
+            <div
+              className="relative mt-1.5 h-[370px]"
+              // Claimed by the product sheet's hero image while it's open for
+              // this product (see setOpenIdWithTransition above) — releasing
+              // it here is what lets the View Transitions API match the two
+              // elements up and morph between them.
+              style={{ viewTransitionName: openId === p.id ? undefined : `shop-photo-${p.id}` }}
+            >
               {p.photoUrl ? (
                 <Image
                   src={p.photoUrl}
@@ -313,7 +339,10 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
         ))}
       </div>
 
-      <ProductSheetModal product={products.find((p) => p.id === openId) ?? null} onClose={() => setOpenId(null)} />
+      <ProductSheetModal
+        product={products.find((p) => p.id === openId) ?? null}
+        onClose={() => setOpenIdWithTransition(null)}
+      />
     </>
   );
 }
