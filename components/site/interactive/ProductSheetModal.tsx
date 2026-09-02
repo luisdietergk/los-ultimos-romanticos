@@ -151,58 +151,56 @@ export function ProductSheetModal({
                   </button>
                 </div>
 
-                <div className="flex min-h-0 flex-1 flex-col gap-2">
-                  <div className="relative min-h-0 flex-1">
-                    <div
-                      ref={carouselRef}
-                      onScroll={onCarouselScroll}
-                      className="flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                    >
-                      {gallery.map((url, i) => (
-                        <div
-                          key={url}
-                          className="relative h-full w-full flex-none snap-center"
-                          // Only the main photo (index 0) is the same element
-                          // the rack thumbnail represents, so only it gets the
-                          // shared name — see ShopRack.tsx's setOpenIdWithTransition.
-                          // It keeps the name even while scrolled off-screen:
-                          // the sheet always opens on index 0, which is the
-                          // only moment the name is actually needed.
-                          style={{ viewTransitionName: i === 0 ? `shop-photo-${product.id}` : undefined }}
-                        >
-                          <Image
-                            src={url}
-                            alt={product.name}
-                            fill
-                            sizes="420px"
-                            className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
-                          />
-                        </div>
-                      ))}
-                    </div>
+                <div className="relative min-h-0 flex-1">
+                  <div
+                    ref={carouselRef}
+                    onScroll={onCarouselScroll}
+                    className="flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {gallery.map((url, i) => (
+                      <div
+                        key={url}
+                        className="relative h-full w-full flex-none snap-center"
+                        // Only the main photo (index 0) is the same element
+                        // the rack thumbnail represents, so only it gets the
+                        // shared name — see ShopRack.tsx's setOpenIdWithTransition.
+                        // It keeps the name even while scrolled off-screen:
+                        // the sheet always opens on index 0, which is the
+                        // only moment the name is actually needed.
+                        style={{ viewTransitionName: i === 0 ? `shop-photo-${product.id}` : undefined }}
+                      >
+                        <Image
+                          src={url}
+                          alt={product.name}
+                          fill
+                          sizes="420px"
+                          className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
+                        />
+                      </div>
+                    ))}
                   </div>
-
-                  {/* The big photo above is still swipeable (a real
-                      carousel) — this row is just a faster way to jump
-                      straight to one, like the reference's thumbnail strip. */}
-                  {gallery.length > 1 && (
-                    <div className="grid flex-none grid-cols-5 gap-1.5">
-                      {gallery.map((url, i) => (
-                        <button
-                          key={url}
-                          type="button"
-                          onClick={() => scrollToImage(i)}
-                          className={`relative aspect-square overflow-hidden border-2 ${
-                            i === activeImage ? "border-ink" : "border-neutral-300"
-                          }`}
-                        >
-                          <Image src={url} alt="" fill sizes="80px" className="object-cover" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
+
+              {/* The big photo above is still swipeable (a real carousel) —
+                  this full-width row (spanning under both columns, like the
+                  reference) is just a faster way to jump straight to one. */}
+              {gallery.length > 1 && (
+                <div className="mt-2 grid flex-none grid-cols-5 gap-2">
+                  {gallery.map((url, i) => (
+                    <button
+                      key={url}
+                      type="button"
+                      onClick={() => scrollToImage(i)}
+                      className={`relative aspect-square overflow-hidden border-2 ${
+                        i === activeImage ? "border-ink" : "border-neutral-300"
+                      }`}
+                    >
+                      <Image src={url} alt="" fill sizes="100px" className="object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div className="flex-none pt-2">
                 <div className="text-[9px] font-extrabold uppercase tracking-[0.2em]">TALLA</div>
