@@ -305,7 +305,7 @@ export function GoalForm({
           })}
           {assistDot && (
             <>
-              <circle cx={assistDot.x} cy={assistDot.y} r="7.5" fill="none" stroke="var(--color-accent)" strokeWidth="2.5" />
+              <circle cx={assistDot.x} cy={assistDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
               {assistDorsal && (
                 <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
                   {assistDorsal}
@@ -316,7 +316,7 @@ export function GoalForm({
           {shotDot &&
             (scorerDorsal ? (
               <>
-                <circle cx={shotDot.x} cy={shotDot.y} r="8.5" fill="none" stroke="var(--color-accent)" strokeWidth="3" />
+                <circle cx={shotDot.x} cy={shotDot.y} r="8.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
                 <text x={shotDot.x} y={shotDot.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
                   {scorerDorsal}
                 </text>

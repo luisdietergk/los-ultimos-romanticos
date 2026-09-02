@@ -166,7 +166,7 @@ export function GoalMapModal({
                       )}
                       {assist && (
                         <>
-                          <circle cx={assist.x} cy={assist.y} r="7.5" fill="none" stroke="var(--color-accent)" strokeWidth="2.5" />
+                          <circle cx={assist.x} cy={assist.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
                           {g!.assistDorsal && (
                             <text x={assist.x} y={assist.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
                               {g!.assistDorsal}
@@ -176,7 +176,7 @@ export function GoalMapModal({
                       )}
                       {scorerDorsal ? (
                         <>
-                          <circle cx={shot!.x} cy={shot!.y} r="8.5" fill="none" stroke="var(--color-accent)" strokeWidth="3" />
+                          <circle cx={shot!.x} cy={shot!.y} r="8.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
                           <text x={shot!.x} y={shot!.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
                             {scorerDorsal}
                           </text>
