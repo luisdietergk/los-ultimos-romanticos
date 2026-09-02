@@ -17,7 +17,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b-2 border-ink bg-ink px-4 py-2.5 text-cream lg:px-8">
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b-2 border-ink bg-transparent px-4 py-2.5 text-ink lg:px-8">
         <div className="h-[41px] w-[34px] flex-none">
           {crestUrl && <Image src={crestUrl} alt="Escudo" width={68} height={82} className="h-full w-full object-contain" />}
         </div>
@@ -34,13 +34,13 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
           className="relative ml-auto flex h-6 w-6 flex-none flex-col items-center justify-center gap-[5px] border-0 bg-none p-0"
         >
           <span
-            className={`block h-0.5 w-6 bg-cream transition-transform duration-200 ${
+            className={`block h-0.5 w-6 bg-ink transition-transform duration-200 ${
               open ? "absolute rotate-45" : ""
             }`}
           />
-          <span className={`block h-0.5 w-6 bg-cream transition-opacity duration-150 ${open ? "opacity-0" : ""}`} />
+          <span className={`block h-0.5 w-6 bg-ink transition-opacity duration-150 ${open ? "opacity-0" : ""}`} />
           <span
-            className={`block h-0.5 w-6 bg-cream transition-transform duration-200 ${
+            className={`block h-0.5 w-6 bg-ink transition-transform duration-200 ${
               open ? "absolute -rotate-45" : ""
             }`}
           />
