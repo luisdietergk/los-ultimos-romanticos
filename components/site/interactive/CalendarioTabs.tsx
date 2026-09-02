@@ -83,7 +83,6 @@ function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntr
         subline: `${g.team === "LUR" ? "LOS ÚLTIMOS ROMÁNTICOS" : m.rival.name} · ${m.jornadaLabel}`,
         typeLabel: g.note || "Gol",
         situacion: g.note || "—",
-        photoUrl: player?.photoUrl ?? null,
         videoUrl: g.videoUrl,
         isLur: g.team === "LUR",
         shotX: g.shotX,

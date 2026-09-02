@@ -1,7 +1,6 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import Image from "next/image";
 import { useRef } from "react";
 import { goalMouthPoint, pitchPoint, shotLineEnd, type PlayMarker } from "@/lib/derived";
 
@@ -16,7 +15,6 @@ export interface GoalMapEntry {
   subline: string;
   typeLabel: string;
   situacion: string;
-  photoUrl: string | null;
   videoUrl: string | null;
   isLur: boolean;
   shotX: number | null;
@@ -148,18 +146,12 @@ export function GoalMapModal({
                 <div className="absolute inset-x-0 -top-0.5 flex justify-center py-2" aria-hidden>
                   <span className="h-1 w-10 bg-ink/30" />
                 </div>
-                {g.photoUrl && (
-                  <Dialog.Title asChild>
-                    <div className="mx-auto -mb-1 h-[64px] w-[64px]">
-                      <Image src={g.photoUrl} alt={g.title} width={64} height={64} className="h-full w-full object-contain" />
-                    </div>
-                  </Dialog.Title>
-                )}
-                {!g.photoUrl && <Dialog.Title className="sr-only">{g.title}</Dialog.Title>}
-                <div className="flex items-baseline justify-center gap-2.5">
-                  <span className="text-[16px] font-black uppercase tracking-tight">{g.title}</span>
-                  <span className="text-[11px] font-extrabold text-accent">{g.dorsalLabel}</span>
-                </div>
+                <Dialog.Title asChild>
+                  <div className="mt-2 flex items-baseline justify-center gap-2.5">
+                    <span className="text-[16px] font-black uppercase tracking-tight">{g.title}</span>
+                    <span className="text-[11px] font-extrabold text-accent">{g.dorsalLabel}</span>
+                  </div>
+                </Dialog.Title>
                 <div className="mt-1 text-[9.5px] font-bold uppercase tracking-[0.12em] text-neutral-600">{g.subline}</div>
               </div>
 
