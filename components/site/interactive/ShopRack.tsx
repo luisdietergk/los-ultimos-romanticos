@@ -79,7 +79,6 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
   const rafRef = useRef<number | null>(null);
   const startTimeRef = useRef(0);
 
-  const [activeIndex, setActiveIndex] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
   const [hasSwiped, setHasSwiped] = useState(false);
   // Which single product's rack photo is allowed to carry a
@@ -160,8 +159,6 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
       node.style.opacity = (1 - Math.max(0, Math.min(0.16, (f - 0.325) * 0.28))).toFixed(3);
       node.style.filter = f <= 0.34 ? "none" : `brightness(${(1 - Math.min(0.06, (f - 0.34) * 0.11)).toFixed(3)})`;
     }
-    const hero = heroIndex(posRef.current, n);
-    setActiveIndex((prev) => (prev === hero ? prev : hero));
   }, [n, products.length]);
 
   const startLoop = useCallback(() => {
@@ -298,7 +295,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
           }}
         />
         {!hasSwiped && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-[208px] flex flex-col items-center gap-1 text-ink">
+          <div className="pointer-events-none absolute inset-x-0 bottom-[1708px] flex flex-col items-center gap-1 text-ink">
             <Image
               src="/swipe-hand.png"
               alt=""
@@ -356,17 +353,6 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
               )}
             </div>
           </div>
-        ))}
-      </div>
-
-      <div className="mt-3.5 flex items-center justify-center gap-1.5">
-        {products.map((p, i) => (
-          <span
-            key={p.id}
-            onClick={() => glideTo(i)}
-            className="block h-[6px] w-[6px] cursor-pointer transition-colors"
-            style={{ background: i === activeIndex ? "var(--color-accent)" : "var(--color-neutral-400)" }}
-          />
         ))}
       </div>
 
