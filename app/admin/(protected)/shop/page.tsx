@@ -3,8 +3,8 @@ import { updateProduct, createProduct } from "@/lib/actions/shop";
 import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 // Matches DETAIL_SLOTS in lib/actions/shop.ts — the public detail sheet's
-// gallery shows the main photo plus these three detail shots.
-const DETAIL_SLOTS = [1, 2, 3];
+// gallery shows the main photo plus these four detail shots (5 total).
+const DETAIL_SLOTS = [1, 2, 3, 4];
 
 function DetailImageFields({ detailImageUrls }: { detailImageUrls: string[] }) {
   return (

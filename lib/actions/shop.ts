@@ -5,9 +5,9 @@ import { prisma } from "@/lib/db";
 import { requireString, requireInt, nullableString } from "./util";
 
 // The detail gallery has a fixed number of extra shots beyond the main photo
-// (detail1..detail3 form fields — see MediaUploadField usage in the admin
-// shop page), matching the reference's 4-thumbnail gallery (main + 3 detail).
-const DETAIL_SLOTS = 3;
+// (detail1..detail4 form fields — see MediaUploadField usage in the admin
+// shop page), for 5 total gallery images per product (main + 4 detail).
+const DETAIL_SLOTS = 4;
 
 function readDetailImageUrls(formData: FormData): string[] {
   const urls: string[] = [];
