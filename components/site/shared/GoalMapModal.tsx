@@ -44,7 +44,7 @@ export function GoalMapModal({
 
   const has = !!g && g.shotX != null && g.shotY != null;
   const shot = has ? pitchPoint(g!.shotX!, g!.shotY!) : null;
-  const lineY2 = g ? shotLineEnd(g.goalY) : 0;
+  const lineY2 = g ? shotLineEnd(g.goalX, g.isLur) : 0;
   // A rival's goal is scored against LUR's own goal, so its shot line/entry
   // targets the opposite end of the pitch from a LUR goal (which always
   // shoots at the rival's goal on the right).

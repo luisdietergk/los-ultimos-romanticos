@@ -184,10 +184,15 @@ export function goalMouthPoint(gx: number, gy: number): { x: number; y: number }
   return { x: 41 + gx * 218, y: 21 + gy * 107 };
 }
 
-/** The dashed line from shot origin to goal entry uses the pitch's x/y for
- * the start and the goal-mouth's y-only for the end (matching the
- * prototype's `shots[].y2` — the line terminates at the pitch's shot depth
- * on the x axis but the goal-mouth's vertical placement). */
-export function shotLineEnd(gy: number | null): number {
-  return 76 + (gy ?? 0.5) * 48;
+/** The dashed line on the top-down pitch map ends on the goal-line (a
+ * vertical segment there, y 76..124), so its position must come from the
+ * goal-mouth's *horizontal* placement (gx: left post..right post as the
+ * shooter faces the goal) — not gx's height off the ground (gy), which has
+ * no top-down representation at all. A LUR shot faces the pitch's right-hand
+ * goal (east), where the shooter's own left is the pitch's smaller-y (north)
+ * side; a rival's shot faces the opposite goal (west), where left/right
+ * flips relative to the pitch's y-axis, hence the isLur mirror. */
+export function shotLineEnd(gx: number | null, isLur: boolean): number {
+  const t = gx ?? 0.5;
+  return 76 + (isLur ? t : 1 - t) * 48;
 }
