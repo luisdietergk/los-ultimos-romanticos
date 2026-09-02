@@ -2,8 +2,12 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
+import { useRef } from "react";
 import { pitchPoint, type DerivedGoal } from "@/lib/derived";
 import type { FullPlayer } from "../Plantilla";
+
+const CLOSE_DRAG_THRESHOLD_PX = 90;
+const CLOSE_ANIM_MS = 220;
 
 /** Player profile bottom-sheet — ported from the prototype's `profile()`
  * (Los Ultimos Romanticos.dc.html:1256-1298, markup ~520-624), but the
@@ -29,19 +33,92 @@ export function PlayerProfileModal({
   const dorsalLabel = p ? `#${p.dorsal.padStart(2, "0")}` : "";
   const shotsLabel = shots.length === 0 ? "SIN REGISTROS" : shots.length === 1 ? "1 TIRO" : `${shots.length} TIROS`;
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Same drag-to-dismiss/slide-up treatment as GoalMapModal.tsx, with one
+  // difference: this sheet's own content really can scroll (a long bio +
+  // goals list), so a body-wide drag only starts a dismiss once the content
+  // is already scrolled to the top — otherwise it's a normal scroll, not a
+  // close gesture. The grabber bar itself always starts a dismiss-drag
+  // regardless of scroll position, since dragging it is unambiguous intent.
+  function animateClosed() {
+    const el = contentRef.current;
+    if (!el) {
+      onClose();
+      return;
+    }
+    el.style.transition = `transform ${CLOSE_ANIM_MS}ms ease-in`;
+    el.style.transform = "translateY(100%)";
+    window.setTimeout(onClose, CLOSE_ANIM_MS);
+  }
+
+  function startDismissDrag(e: React.PointerEvent<HTMLDivElement>, requireScrollTop: boolean) {
+    const el = contentRef.current;
+    if (!el) return;
+    if (requireScrollTop && el.scrollTop > 0) return;
+    const container = e.currentTarget;
+    const pointerId = e.pointerId;
+    const startY = e.clientY;
+    let captured = false;
+
+    const onMove = (ev: PointerEvent) => {
+      const dy = ev.clientY - startY;
+      if (!captured) {
+        if (dy <= 8) return;
+        captured = true;
+        el.style.transition = "none";
+        container.setPointerCapture(pointerId);
+      }
+      el.style.transform = `translateY(${Math.max(0, dy)}px)`;
+    };
+    const onUp = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (!captured) return;
+      container.releasePointerCapture(pointerId);
+      const dy = ev.clientY - startY;
+      if (dy > CLOSE_DRAG_THRESHOLD_PX) {
+        animateClosed();
+      } else {
+        el.style.transition = `transform ${CLOSE_ANIM_MS}ms cubic-bezier(0.22,1,0.36,1)`;
+        el.style.transform = "translateY(0px)";
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
   return (
-    <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog.Root
+      open={open}
+      onOpenChange={(v) => {
+        if (!v) animateClosed();
+      }}
+    >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
         <Dialog.Content
-          className="fixed bottom-0 left-1/2 z-50 max-h-[92vh] w-full max-w-[480px] -translate-x-1/2 overflow-y-auto bg-cream"
+          ref={contentRef}
+          onPointerDown={(e) => startDismissDrag(e, true)}
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92vh] w-full max-w-[480px] overflow-y-auto rounded-t-[20px] bg-cream data-[state=open]:animate-[lur-sheet-in_0.32s_cubic-bezier(0.22,1,0.36,1)]"
           aria-describedby={undefined}
         >
           {p && (
             <>
               <div className="relative border-b-2 border-ink px-4 pb-3.5 pt-2.5">
-                <Dialog.Close className="absolute right-3 top-1 text-2xl leading-none">×</Dialog.Close>
-                <div className="grid grid-cols-[82px_1fr] gap-3.5">
+                <div
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    startDismissDrag(e, false);
+                  }}
+                  className="absolute inset-x-0 -top-0.5 flex touch-none justify-center py-2"
+                  aria-hidden
+                >
+                  <span className="h-1 w-10 bg-ink/30" />
+                </div>
+                <div className="grid grid-cols-[82px_1fr] gap-3.5 pt-2">
                   <Dialog.Title asChild>
                     <div className={`relative h-24 w-[82px] flex-none overflow-hidden ${p.photoUrl ? "" : "bg-neutral-200"}`}>
                       {p.photoUrl && (
