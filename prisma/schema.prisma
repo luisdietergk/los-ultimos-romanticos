@@ -80,6 +80,15 @@ model Goal {
   shotY      Float?
   goalX      Float?
   goalY      Float?
+  // Where the assist pass started from (LUR only — an assist is always a
+  // teammate) — the public shot map animates a play from here through the
+  // shooter's own shotX/shotY and on to the goal.
+  assistX    Float?
+  assistY    Float?
+  // Extra context dots for "showing the play" (other players' positions at
+  // the moment of the shot) — `{ team: "LUR" | "RIVAL", x, y }[]`, an
+  // arbitrary-length list so a JSON column beats a full related table here.
+  playMarkers Json     @default("[]")
   createdAt  DateTime @default(now())
 
   @@index([matchId])

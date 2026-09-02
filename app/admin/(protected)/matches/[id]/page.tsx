@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { renameRival, updateMatch } from "@/lib/actions/matches";
 import { GoalsList } from "./GoalsList";
 import type { GoalTeam } from "@/lib/types";
+import type { PlayMarker } from "@/lib/derived";
 
 function toDatetimeLocal(d: Date): string {
   // Stored/edited as plain UTC wall-clock (see lib/actions/matches.ts).
@@ -36,6 +37,9 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     shotY: g.shotY,
     goalX: g.goalX,
     goalY: g.goalY,
+    assistX: g.assistX,
+    assistY: g.assistY,
+    playMarkers: (g.playMarkers as unknown as PlayMarker[]) ?? [],
   }));
 
   return (

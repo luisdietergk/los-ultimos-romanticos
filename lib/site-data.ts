@@ -1,6 +1,14 @@
 import { prisma } from "./db";
-import type { DerivedMatch, DerivedPlayer } from "./derived";
+import type { DerivedMatch, DerivedGoal, DerivedPlayer, PlayMarker } from "./derived";
 import type { KitType } from "./types";
+import type { Goal } from "@prisma/client";
+
+/** Prisma types `playMarkers` as a generic JsonValue; it's always really a
+ * `PlayMarker[]` (written that way by lib/actions/matches.ts), so every read
+ * path re-shapes the raw row into `DerivedGoal` through this one cast. */
+function toDerivedGoal(g: Goal): DerivedGoal {
+  return { ...g, playMarkers: (g.playMarkers as unknown as PlayMarker[]) ?? [] };
+}
 
 export async function getSiteSettings() {
   const settings = await prisma.siteSettings.findUnique({ where: { id: 1 } });
@@ -25,7 +33,7 @@ export async function getAllMatches(): Promise<DerivedMatch[]> {
     crestOverrideUrl: m.crestOverrideUrl,
     heroCrestUrl: m.heroCrestUrl,
     venue: m.venue,
-    goals: m.goals,
+    goals: m.goals.map(toDerivedGoal),
   }));
 }
 
@@ -48,8 +56,9 @@ export async function getFullRoster() {
   return prisma.player.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" } });
 }
 
-export async function getAllGoals() {
-  return prisma.goal.findMany();
+export async function getAllGoals(): Promise<DerivedGoal[]> {
+  const goals = await prisma.goal.findMany();
+  return goals.map(toDerivedGoal);
 }
 
 export async function getShopProducts() {

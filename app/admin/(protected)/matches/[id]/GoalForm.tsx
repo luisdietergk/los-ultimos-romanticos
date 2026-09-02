@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { pitchPoint, goalMouthPoint } from "@/lib/derived";
+import { pitchPoint, goalMouthPoint, type PlayMarker } from "@/lib/derived";
 import { addGoal, updateGoal } from "@/lib/actions/matches";
 
 function clamp01(v: number): number {
@@ -26,7 +26,15 @@ export interface GoalFormInitial {
   shotY: number | null;
   goalX: number | null;
   goalY: number | null;
+  assistX: number | null;
+  assistY: number | null;
+  playMarkers: PlayMarker[];
 }
+
+/** What a click on the pitch does right now — defaults back to placing the
+ * shot origin after every other kind of click, so each button press places
+ * exactly one dot before returning to the normal mode. */
+type PitchMode = "shot" | "assist" | "rival" | "lur";
 
 /** Shared add/edit goal form: minute, team, scorer, note, and click-to-place
  * shot-origin + goal-mouth pickers using the exact same 300x200 / 300x140
@@ -50,6 +58,10 @@ export function GoalForm({
   const [shotY, setShotY] = useState<number | null>(initial?.shotY ?? null);
   const [goalX, setGoalX] = useState<number | null>(initial?.goalX ?? null);
   const [goalY, setGoalY] = useState<number | null>(initial?.goalY ?? null);
+  const [assistX, setAssistX] = useState<number | null>(initial?.assistX ?? null);
+  const [assistY, setAssistY] = useState<number | null>(initial?.assistY ?? null);
+  const [markers, setMarkers] = useState<PlayMarker[]>(initial?.playMarkers ?? []);
+  const [pitchMode, setPitchMode] = useState<PitchMode>("shot");
 
   const pitchRef = useRef<SVGSVGElement>(null);
   const goalRef = useRef<SVGSVGElement>(null);
@@ -60,8 +72,20 @@ export function GoalForm({
     const rect = svg.getBoundingClientRect();
     const px = (e.clientX - rect.left) * (300 / rect.width);
     const py = (e.clientY - rect.top) * (200 / rect.height);
-    setShotX(clamp01((px - 8) / 284));
-    setShotY(clamp01((py - 8) / 184));
+    const x = clamp01((px - 8) / 284);
+    const y = clamp01((py - 8) / 184);
+
+    if (pitchMode === "shot") {
+      setShotX(x);
+      setShotY(y);
+    } else if (pitchMode === "assist") {
+      setAssistX(x);
+      setAssistY(y);
+      setPitchMode("shot");
+    } else {
+      setMarkers((prev) => [...prev, { team: pitchMode === "rival" ? "RIVAL" : "LUR", x, y }]);
+      setPitchMode("shot");
+    }
   }
 
   function handleGoalClick(e: React.MouseEvent<SVGSVGElement>) {
@@ -76,6 +100,7 @@ export function GoalForm({
 
   const shotDot = shotX != null && shotY != null ? pitchPoint(shotX, shotY) : null;
   const goalDot = goalX != null && goalY != null ? goalMouthPoint(goalX, goalY) : null;
+  const assistDot = assistX != null && assistY != null ? pitchPoint(assistX, assistY) : null;
 
   const action = isEdit ? updateGoal : addGoal;
 
@@ -201,7 +226,37 @@ export function GoalForm({
       </div>
 
       <div className="w-full max-w-[220px]">
-        <div className="mb-1 text-[10px] font-bold uppercase tracking-wider text-neutral-600">Origen del tiro (clic)</div>
+        <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-neutral-600">
+          <span>Mapa de la jugada (clic)</span>
+        </div>
+
+        <div className="mb-1.5 flex flex-wrap gap-1.5">
+          {(
+            [
+              { mode: "assist", label: "+ Asistente" },
+              { mode: "lur", label: "+ Jugador LUR" },
+              { mode: "rival", label: "+ Jugador rival" },
+            ] as const
+          ).map(({ mode, label }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setPitchMode(mode === pitchMode ? "shot" : mode)}
+              className={`border px-2 py-1 text-[9.5px] font-bold uppercase tracking-wider ${
+                pitchMode === mode ? "border-ink bg-ink text-cream" : "border-ink/30 text-neutral-700"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        {pitchMode !== "shot" && (
+          <p className="mb-1.5 text-[10px] font-semibold text-accent">
+            Clic en el mapa para colocar{" "}
+            {pitchMode === "assist" ? "el asistente" : pitchMode === "lur" ? "al jugador LUR" : "al jugador rival"}.
+          </p>
+        )}
+
         <svg
           ref={pitchRef}
           viewBox="0 0 300 200"
@@ -211,6 +266,18 @@ export function GoalForm({
           <rect x="8" y="8" width="284" height="184" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
           <line x1="150" y1="8" x2="150" y2="192" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
           <circle cx="150" cy="100" r="26" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          {markers.map((m, i) => {
+            const pt = pitchPoint(m.x, m.y);
+            return <circle key={i} cx={pt.x} cy={pt.y} r="5" fill={m.team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent)"} />;
+          })}
+          {assistDot && (
+            <>
+              <circle cx={assistDot.x} cy={assistDot.y} r="6.5" fill="var(--color-accent-light)" stroke="var(--color-accent)" strokeWidth="2" />
+              <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-ink)">
+                A
+              </text>
+            </>
+          )}
           {shotDot && (
             <>
               <circle cx={shotDot.x} cy={shotDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
@@ -220,18 +287,46 @@ export function GoalForm({
         </svg>
         <input type="hidden" name="shotX" value={shotX ?? ""} readOnly />
         <input type="hidden" name="shotY" value={shotY ?? ""} readOnly />
-        {shotDot && (
-          <button
-            type="button"
-            onClick={() => {
-              setShotX(null);
-              setShotY(null);
-            }}
-            className="mt-1 text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
-          >
-            Borrar punto
-          </button>
-        )}
+        <input type="hidden" name="assistX" value={assistX ?? ""} readOnly />
+        <input type="hidden" name="assistY" value={assistY ?? ""} readOnly />
+        <input type="hidden" name="playMarkers" value={JSON.stringify(markers)} readOnly />
+
+        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+          {shotDot && (
+            <button
+              type="button"
+              onClick={() => {
+                setShotX(null);
+                setShotY(null);
+              }}
+              className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
+            >
+              Borrar tiro
+            </button>
+          )}
+          {assistDot && (
+            <button
+              type="button"
+              onClick={() => {
+                setAssistX(null);
+                setAssistY(null);
+              }}
+              className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
+            >
+              Borrar asistente
+            </button>
+          )}
+          {markers.map((m, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setMarkers((prev) => prev.filter((_, j) => j !== i))}
+              className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
+            >
+              Borrar {m.team === "RIVAL" ? "rival" : "LUR"} #{i + 1}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="w-full max-w-[220px]">

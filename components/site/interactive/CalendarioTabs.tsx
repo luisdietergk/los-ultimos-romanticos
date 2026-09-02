@@ -89,6 +89,9 @@ function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntr
         shotY: g.shotY,
         goalX: g.goalX,
         goalY: g.goalY,
+        assistX: g.assistX,
+        assistY: g.assistY,
+        playMarkers: g.playMarkers,
       };
     });
 }

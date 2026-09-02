@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
-import { goalMouthPoint, pitchPoint, shotLineEnd } from "@/lib/derived";
+import { goalMouthPoint, pitchPoint, shotLineEnd, type PlayMarker } from "@/lib/derived";
 
 export interface GoalMapEntry {
   key: string;
@@ -19,6 +19,9 @@ export interface GoalMapEntry {
   shotY: number | null;
   goalX: number | null;
   goalY: number | null;
+  assistX: number | null;
+  assistY: number | null;
+  playMarkers: PlayMarker[];
 }
 
 /** Read-only shot-map viewer, shared across Calendario's goal rows, the
@@ -51,6 +54,9 @@ export function GoalMapModal({
   const lineX2 = g?.isLur === false ? 6 : 294;
   const hasGoalDot = !!g && g.goalX != null && g.goalY != null;
   const goalDot = hasGoalDot ? goalMouthPoint(g!.goalX!, g!.goalY!) : goalMouthPoint(0.5, 0.5);
+  const hasAssist = !!g && g.assistX != null && g.assistY != null;
+  const assist = hasAssist ? pitchPoint(g!.assistX!, g!.assistY!) : null;
+  const markers = g?.playMarkers ?? [];
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -99,6 +105,34 @@ export function GoalMapModal({
                   <rect x="246" y="52" width="46" height="96" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <rect x="274" y="76" width="18" height="48" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <rect x="292" y="76" width="4" height="48" fill="var(--color-ink)" />
+                  {/* Context dots for "showing the play" — other players'
+                      positions, purely illustrative (see PlayMarker). */}
+                  {markers.map((m, i) => {
+                    const pt = pitchPoint(m.x, m.y);
+                    return (
+                      <circle
+                        key={i}
+                        cx={pt.x}
+                        cy={pt.y}
+                        r="5"
+                        fill={m.team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent-light)"}
+                      />
+                    );
+                  })}
+                  {has && assist && (
+                    <line
+                      key={`${g!.key}-assist`}
+                      x1={assist.x}
+                      y1={assist.y}
+                      x2={shot!.x}
+                      y2={shot!.y}
+                      stroke="var(--color-accent)"
+                      strokeWidth="1.6"
+                      strokeDasharray="0.045 0.035"
+                      pathLength={1}
+                      style={{ animation: "lur-dash 1s linear infinite" }}
+                    />
+                  )}
                   {has && (
                     <>
                       <line
@@ -113,6 +147,22 @@ export function GoalMapModal({
                         pathLength={1}
                         style={{ animation: "lur-dash 1s linear infinite" }}
                       />
+                      {/* The play, as one dot: assist origin -> scorer ->
+                          goal, looping continuously. Only drawn when there's
+                          an assist point to start from — otherwise the
+                          marching dashes above already carry that cue. */}
+                      {assist && (
+                        <circle r="4.5" fill="var(--color-accent)">
+                          <animateMotion
+                            dur="1.8s"
+                            repeatCount="indefinite"
+                            path={`M ${assist.x} ${assist.y} L ${shot!.x} ${shot!.y} L ${lineX2} ${lineY2}`}
+                          />
+                        </circle>
+                      )}
+                      {assist && (
+                        <circle cx={assist.x} cy={assist.y} r="6" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
+                      )}
                       <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
                       <circle cx={shot!.x} cy={shot!.y} r="3" fill="var(--color-ink)" />
                     </>

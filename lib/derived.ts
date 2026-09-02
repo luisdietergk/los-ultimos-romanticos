@@ -7,6 +7,15 @@
 
 export type GoalTeam = "LUR" | "RIVAL";
 
+/** A context dot on the pitch shot-map — another player's position at the
+ * moment of the shot, placed via the admin's "+ Jugador rival"/"+ Jugador
+ * LUR" tools. Purely illustrative, no relation to `Player` rows. */
+export interface PlayMarker {
+  team: GoalTeam;
+  x: number;
+  y: number;
+}
+
 export interface DerivedGoal {
   id: string;
   minute: number;
@@ -19,6 +28,9 @@ export interface DerivedGoal {
   shotY: number | null;
   goalX: number | null;
   goalY: number | null;
+  assistX: number | null;
+  assistY: number | null;
+  playMarkers: PlayMarker[];
 }
 
 export interface DerivedMatch {
@@ -122,7 +134,7 @@ export interface DerivedPlayer {
   assists: number;
 }
 
-export function playerGoalCount(playerId: string, allGoals: DerivedGoal[]): number {
+export function playerGoalCount(playerId: string, allGoals: Pick<DerivedGoal, "team" | "playerId">[]): number {
   return allGoals.filter((g) => g.team === "LUR" && g.playerId === playerId).length;
 }
 

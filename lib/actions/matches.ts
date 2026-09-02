@@ -1,9 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import type { MatchStatus, GoalTeam } from "@/lib/types";
 import { requireString, requireInt, nullableString, floatOrNull } from "./util";
+import type { PlayMarker } from "@/lib/derived";
 
 const VALID_STATUS: MatchStatus[] = ["SCHEDULED", "CANCELLED"];
 const VALID_TEAM: GoalTeam[] = ["LUR", "RIVAL"];
@@ -42,6 +44,24 @@ export async function updateMatch(formData: FormData): Promise<void> {
   redirect("/admin/matches");
 }
 
+/** The client keeps `playMarkers` as one JSON blob in a hidden field (see
+ * GoalForm.tsx) rather than N separate inputs, since the list is
+ * variable-length. Malformed/tampered JSON just falls back to no markers
+ * instead of failing the whole save. */
+function parsePlayMarkers(raw: FormDataEntryValue | null): PlayMarker[] {
+  if (typeof raw !== "string" || !raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (m): m is PlayMarker =>
+        m && (m.team === "LUR" || m.team === "RIVAL") && typeof m.x === "number" && typeof m.y === "number"
+    );
+  } catch {
+    return [];
+  }
+}
+
 async function resolveGoalFields(formData: FormData) {
   const matchId = requireString(formData, "matchId");
   const minute = requireInt(formData, "minute");
@@ -54,6 +74,9 @@ async function resolveGoalFields(formData: FormData) {
   const shotY = floatOrNull(formData, "shotY");
   const goalX = floatOrNull(formData, "goalX");
   const goalY = floatOrNull(formData, "goalY");
+  const assistX = floatOrNull(formData, "assistX");
+  const assistY = floatOrNull(formData, "assistY");
+  const playMarkers = parsePlayMarkers(formData.get("playMarkers"));
 
   let playerId: string | null = null;
   let scorerName: string;
@@ -68,7 +91,22 @@ async function resolveGoalFields(formData: FormData) {
     scorerName = requireString(formData, "scorerName").trim();
   }
 
-  return { matchId, minute, team: team as GoalTeam, playerId, scorerName, note, videoUrl, shotX, shotY, goalX, goalY };
+  return {
+    matchId,
+    minute,
+    team: team as GoalTeam,
+    playerId,
+    scorerName,
+    note,
+    videoUrl,
+    shotX,
+    shotY,
+    goalX,
+    goalY,
+    assistX,
+    assistY,
+    playMarkers: playMarkers as unknown as Prisma.InputJsonValue,
+  };
 }
 
 export async function addGoal(formData: FormData): Promise<void> {
