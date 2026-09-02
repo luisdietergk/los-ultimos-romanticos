@@ -89,15 +89,32 @@ export function ProductSheetModal({
                 ×
               </Dialog.Close>
 
-              <div className="flex items-start gap-3 pr-10 lg:gap-10 lg:pr-14">
-                {/* Measured off the reference (853x1844px capture): the text
-                    block sits vertically centered next to the photo, which
-                    starts flush at the top — it isn't top-aligned with the
-                    text. Font sizes below are viewport-scaled (vw) to match
-                    the reference's own proportions (title ≈ 10% of the page
-                    width, price ≈ 6.5%), clamped so they stay sane outside
-                    the ~850px width it was shot at. */}
-                <div className="flex w-[27%] flex-none flex-col justify-center self-stretch">
+              <div className="relative">
+                {/* The text panel now overlaps the photo (a cream/90 backdrop
+                    keeps it readable, same trick Hero.tsx uses) instead of
+                    sharing a column with it — that's what let the photo grow
+                    this much: it isn't fighting the text for width anymore. */}
+                <div
+                  className="relative aspect-[3/4] w-full"
+                  // Only the main photo (index 0) is the same element the
+                  // rack thumbnail represents, so only it gets the shared
+                  // name — see ShopRack.tsx's setOpenIdWithTransition. The
+                  // sheet always opens on index 0, which is the only moment
+                  // the name is actually needed.
+                  style={{ viewTransitionName: activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
+                >
+                  {gallery[activeImage] && (
+                    <Image
+                      src={gallery[activeImage]}
+                      alt={product.name}
+                      fill
+                      sizes="480px"
+                      className="object-contain"
+                    />
+                  )}
+                </div>
+
+                <div className="absolute left-0 top-4 z-[5] w-[58%] bg-cream/90 p-3 lg:top-8 lg:w-[46%] lg:p-6">
                   <div className="text-[clamp(9px,1.8vw,13px)] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
@@ -134,26 +151,6 @@ export function ProductSheetModal({
                     </svg>
                     {favorited ? "EN FAVORITOS" : "AÑADIR A FAVORITOS"}
                   </button>
-                </div>
-
-                <div
-                  className="relative aspect-[3/4] w-full flex-1"
-                  // Only the main photo (index 0) is the same element the
-                  // rack thumbnail represents, so only it gets the shared
-                  // name — see ShopRack.tsx's setOpenIdWithTransition. The
-                  // sheet always opens on index 0, which is the only moment
-                  // the name is actually needed.
-                  style={{ viewTransitionName: activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
-                >
-                  {gallery[activeImage] && (
-                    <Image
-                      src={gallery[activeImage]}
-                      alt={product.name}
-                      fill
-                      sizes="420px"
-                      className="object-contain"
-                    />
-                  )}
                 </div>
               </div>
 
