@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { isToday, matchScore, type DerivedGoal, type DerivedMatch } from "@/lib/derived";
+import { isToday, matchScore, type DerivedGoal, type DerivedMatch, type DerivedPlayer } from "@/lib/derived";
 import { GoalMapModal, type GoalMapEntry } from "../shared/GoalMapModal";
 
 const MONTERREY_TZ = "America/Monterrey";
@@ -66,25 +66,31 @@ function outcomeBadge(
   return { result: "EMPATE", resultClassName: "text-neutral-700", score, boxClassName: "border border-ink bg-transparent text-ink" };
 }
 
-function buildGoalEntries(m: DerivedMatch): GoalMapEntry[] {
+/** Looks up each goal's scorer in the roster so the shot map can show their
+ * real photo/dorsal instead of a placeholder — only LUR goals have a
+ * `playerId` at all (a rival's goal is just a name, see lib/actions/matches.ts). */
+function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntry[] {
   return [...m.goals]
     .sort((a, b) => a.minute - b.minute)
-    .map((g: DerivedGoal) => ({
-      key: g.id,
-      minute: g.minute,
-      title: g.scorerName || (g.team === "LUR" ? "SIN ASIGNAR" : m.rival.name),
-      dorsalLabel: "#—",
-      subline: `${g.team === "LUR" ? "LOS ÚLTIMOS ROMÁNTICOS" : m.rival.name} · ${m.jornadaLabel}`,
-      typeLabel: g.note || "Gol",
-      situacion: g.note || "—",
-      photoUrl: null,
-      videoUrl: g.videoUrl,
-      isLur: g.team === "LUR",
-      shotX: g.shotX,
-      shotY: g.shotY,
-      goalX: g.goalX,
-      goalY: g.goalY,
-    }));
+    .map((g: DerivedGoal) => {
+      const player = g.playerId ? roster.find((p) => p.id === g.playerId) : undefined;
+      return {
+        key: g.id,
+        minute: g.minute,
+        title: g.scorerName || (g.team === "LUR" ? "SIN ASIGNAR" : m.rival.name),
+        dorsalLabel: player ? `#${player.dorsal.padStart(2, "0")}` : "#—",
+        subline: `${g.team === "LUR" ? "LOS ÚLTIMOS ROMÁNTICOS" : m.rival.name} · ${m.jornadaLabel}`,
+        typeLabel: g.note || "Gol",
+        situacion: g.note || "—",
+        photoUrl: player?.photoUrl ?? null,
+        videoUrl: g.videoUrl,
+        isLur: g.team === "LUR",
+        shotX: g.shotX,
+        shotY: g.shotY,
+        goalX: g.goalX,
+        goalY: g.goalY,
+      };
+    });
 }
 
 function CrestThumb({ src, alt }: { src: string | null; alt: string }) {
@@ -99,10 +105,12 @@ export function CalendarioTabs({
   calendario,
   resultados,
   now,
+  roster,
 }: {
   calendario: DerivedMatch[];
   resultados: DerivedMatch[];
   now: Date;
+  roster: DerivedPlayer[];
 }) {
   const [tab, setTab] = useState<"cal" | "res">("cal");
   const [fullCal, setFullCal] = useState(false);
@@ -112,7 +120,7 @@ export function CalendarioTabs({
 
   const visibleFixtures = fullCal ? calendario : calendario.slice(0, 3);
   const modalMatch = modalMatchId ? resultados.find((m) => m.id === modalMatchId) ?? null : null;
-  const entries = modalMatch ? buildGoalEntries(modalMatch) : [];
+  const entries = modalMatch ? buildGoalEntries(modalMatch, roster) : [];
 
   return (
     <div>
@@ -196,7 +204,7 @@ export function CalendarioTabs({
           {resultados.map((m) => {
             const badge = outcomeBadge(m);
             const expanded = expandedMatchId === m.id;
-            const goals = expanded ? buildGoalEntries(m) : [];
+            const goals = expanded ? buildGoalEntries(m, roster) : [];
             return (
               <div key={m.id} className="border-b border-ink/15">
                 <button
@@ -251,7 +259,9 @@ export function CalendarioTabs({
                             }}
                             className="flex items-center gap-3 py-2.5 text-left"
                           >
-                            <span className="w-8 flex-none font-serif text-[16px] leading-none text-accent">{entry.minute}&apos;</span>
+                            <span className="w-9 flex-none font-dynamic text-[19px] font-bold leading-none tracking-[0.02em] text-accent">
+                              {entry.minute}&apos;
+                            </span>
                             <span className="flex-1 text-[12.5px] font-extrabold uppercase leading-[1.3]">{entry.title}</span>
                             <span
                               className={`flex-none px-1.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-[0.08em] ${

@@ -47,7 +47,7 @@ export default async function HomePage() {
       <Hero heroVideoUrl={settings.heroVideoUrl} taglineHtml={settings.taglineHtml} />
       <Historia p1={settings.historiaP1} p2={settings.historiaP2} />
       <Partidos matches={matches} now={now} teamCrestUrl={settings.teamCrestUrl} />
-      <Calendario matches={matches} now={now} ligaNombre={settings.ligaNombre} />
+      <Calendario matches={matches} now={now} ligaNombre={settings.ligaNombre} roster={roster} />
       <Plantilla roster={fullRoster} allGoals={allGoals} />
       <Podios roster={roster} allGoals={allGoals} />
       <Uniformes kits={kits} />

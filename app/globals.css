@@ -71,8 +71,12 @@ h1, h2, h3, h4 {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.18); }
 }
+/* Runs continuously (see GoalMapModal.tsx) rather than once — "siempre
+   animada" — the offset moves by exactly one dash+gap period (0.045+0.035,
+   in pathLength units) so the loop point is seamless. */
 @keyframes lur-dash {
-  to { stroke-dashoffset: 0; }
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -0.08; }
 }
 
 /* Shop rack's "swipe to explore" hint — a finger sliding back and forth,
