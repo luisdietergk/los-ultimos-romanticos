@@ -6,13 +6,9 @@ import Image from "next/image";
 import type { ShopProduct } from "../Tienda";
 
 // Perk icon paths + copy ported verbatim from the prototype's `spPerks`
-// (Los Ultimos Romanticos.dc.html:2170-2179).
+// (Los Ultimos Romanticos.dc.html:2170-2179), minus "Diseños Exclusivos" —
+// the reference sheet shows only these 3.
 const PERKS = [
-  {
-    l1: "DISEÑOS",
-    l2: "EXCLUSIVOS",
-    d: "M12 20.6S3.6 14.6 3.6 9.1A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.4 2.7c0 5.5-8.4 11.5-8.4 11.5z",
-  },
   {
     l1: "EDICIONES",
     l2: "LIMITADAS",
@@ -207,9 +203,9 @@ export function ProductSheetModal({
                 )}
               </div>
 
-              <div className="mt-2 grid flex-none grid-cols-4 border-t border-ink/40">
+              <div className="mt-2 grid flex-none grid-cols-3 border-t border-ink/40">
                 {PERKS.map((perk, i) => (
-                  <div key={perk.l1} className={`px-1 pb-2 pt-2 text-center lg:pb-[18px] lg:pt-[15px] ${i < 3 ? "border-r border-ink/40" : ""}`}>
+                  <div key={perk.l1} className={`px-1 pb-2 pt-2 text-center lg:pb-[18px] lg:pt-[15px] ${i < 2 ? "border-r border-ink/40" : ""}`}>
                     <div className="flex justify-center">
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="lg:h-[19px] lg:w-[19px]">
                         <path d={perk.d} />
