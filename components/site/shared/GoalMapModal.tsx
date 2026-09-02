@@ -57,12 +57,12 @@ export function GoalMapModal({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
         <Dialog.Content
-          className="fixed bottom-0 left-1/2 z-50 max-h-[100dvh] w-full max-w-[480px] -translate-x-1/2 overflow-hidden bg-cream"
+          className="fixed inset-x-0 bottom-0 top-0 z-50 mx-auto flex w-full max-w-[480px] flex-col overflow-hidden bg-cream"
           aria-describedby={undefined}
         >
           {g && (
             <>
-              <div className="relative border-b-2 border-ink px-4 pb-2 pt-2 text-center">
+              <div className="relative flex-none border-b-2 border-ink px-4 pb-2 pt-2 text-center">
                 <Dialog.Close className="absolute right-3 top-1 text-2xl leading-none">×</Dialog.Close>
                 {g.photoUrl && (
                   <Dialog.Title asChild>
@@ -79,12 +79,18 @@ export function GoalMapModal({
                 <div className="mt-1 text-[9.5px] font-bold uppercase tracking-[0.12em] text-neutral-600">{g.subline}</div>
               </div>
 
-              <div className="flex items-baseline gap-2.5 px-4 pb-0.5 pt-1.5">
+              <div className="flex flex-none items-baseline gap-2.5 px-4 pb-0.5 pt-1.5">
                 <span className="text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-accent">MAPA DE TIRO</span>
                 <span className="h-px flex-1 bg-ink/40" />
               </div>
-              <div className="flex justify-center px-4 pt-1">
-                <svg viewBox="0 0 300 200" className="h-[128px] w-auto">
+              {/* flex-[3] vs. the goal-mouth close-up's flex-[2] below — the
+                  pitch is the map that matters most here, so it claims more
+                  of whatever vertical space the screen has to give (see the
+                  parent's h-full flex-col) instead of a fixed pixel size, and
+                  the svg itself scales via preserveAspectRatio to fill that
+                  box as large as it can without distorting. */}
+              <div className="min-h-0 flex-[3] px-4 pb-1 pt-1">
+                <svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid meet" className="mx-auto h-full max-w-full">
                   <rect x="8" y="8" width="284" height="184" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <line x1="150" y1="8" x2="150" y2="192" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <circle cx="150" cy="100" r="26" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
@@ -116,7 +122,7 @@ export function GoalMapModal({
               </div>
 
               {g.videoUrl && (
-                <div className="px-4 pt-1">
+                <div className="flex-none px-4 pt-1">
                   <a
                     href={g.videoUrl}
                     target="_blank"
@@ -131,7 +137,7 @@ export function GoalMapModal({
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-4 px-4 pb-0.5 pt-1">
+              <div className="flex flex-none items-center justify-center gap-4 px-4 pb-0.5 pt-1">
                 <button
                   type="button"
                   onClick={() => onIndexChange((index - 1 + n) % n)}
@@ -156,8 +162,8 @@ export function GoalMapModal({
                 </button>
               </div>
 
-              <div className="flex justify-center px-4 pb-1 pt-0.5">
-                <svg viewBox="0 0 300 140" className="h-[92px] w-auto">
+              <div className="min-h-0 flex-[2] px-4 pb-1 pt-0.5">
+                <svg viewBox="0 0 300 140" preserveAspectRatio="xMidYMid meet" className="mx-auto h-full max-w-full">
                   <path d="M66 36 L234 36 L234 110 L66 110 Z" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1" />
                   <path d="M41 21 L66 36 M259 21 L234 36 M41 128 L66 110 M259 128 L234 110" stroke="var(--color-neutral-500)" strokeWidth="1" />
                   <path d="M108 36 L108 110 M150 36 L150 110 M192 36 L192 110" stroke="var(--color-neutral-400)" strokeWidth="0.8" />
@@ -177,7 +183,7 @@ export function GoalMapModal({
                 </svg>
               </div>
 
-              <div className="grid grid-cols-3 border-t-2 border-ink text-center">
+              <div className="grid flex-none grid-cols-3 border-t-2 border-ink text-center">
                 <div className="px-2.5 py-2">
                   <div className="text-[13px] font-extrabold">{g.typeLabel}</div>
                   <div className="mt-1 text-[8.5px] font-bold uppercase tracking-[0.12em] text-neutral-600">TIPO DE TIRO</div>
