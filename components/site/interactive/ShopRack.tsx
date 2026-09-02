@@ -314,7 +314,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
                 real aspect ratio means the image fills it top-to-bottom
                 with no such gap. */}
             <div
-              className="relative mt-1.5 h-[370px] overflow-hidden"
+              className="relative mt-1.5 h-[370px]"
               // Claimed by the product sheet's hero image while it's open for
               // this product (see setOpenIdWithTransition above) — releasing
               // it here is what lets the View Transitions API match the two
@@ -331,9 +331,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
                   alt={p.name}
                   fill
                   sizes="252px"
-                  className={`object-contain drop-shadow-[0_18px_22px_rgba(32,30,29,0.24)] ${
-                    p.zoomed ? "scale-150" : ""
-                  }`}
+                  className="object-contain drop-shadow-[0_18px_22px_rgba(32,30,29,0.24)]"
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center border border-dashed border-neutral-400 text-center text-[11px] font-extrabold uppercase tracking-wide text-neutral-600">
