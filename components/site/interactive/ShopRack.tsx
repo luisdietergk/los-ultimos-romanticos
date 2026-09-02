@@ -298,7 +298,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
           }}
         />
         {!hasSwiped && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-2 flex flex-col items-center gap-1 text-ink">
+          <div className="pointer-events-none absolute inset-x-0 bottom-[208px] flex flex-col items-center gap-1 text-ink">
             <Image
               src="/swipe-hand.png"
               alt=""
