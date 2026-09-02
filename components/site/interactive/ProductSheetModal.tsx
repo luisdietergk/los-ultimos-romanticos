@@ -89,18 +89,25 @@ export function ProductSheetModal({
               </Dialog.Close>
 
               <div className="flex min-h-0 flex-1 items-stretch gap-4 overflow-hidden pr-12 lg:gap-16 lg:pr-16">
-                <div className="flex w-[38%] flex-none flex-col overflow-y-auto">
-                  <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-accent">
+                {/* Measured off the reference (853x1844px capture): the text
+                    block sits vertically centered next to the photo, which
+                    fills the full row height flush from the top — it isn't
+                    top-aligned with the text. Font sizes below are viewport-
+                    scaled (vw) to match the reference's own proportions
+                    (title ≈ 10% of the page width, price ≈ 6.5%), clamped so
+                    they stay sane outside the ~850px width it was shot at. */}
+                <div className="flex w-[38%] flex-none flex-col justify-center overflow-y-auto">
+                  <div className="text-[clamp(9px,1.8vw,13px)] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
                   <Dialog.Title asChild>
-                    <h2 className="mt-2 font-serif text-[18px] uppercase leading-[0.95] sm:text-[26px] lg:text-[42px]">
+                    <h2 className="mt-2 font-serif text-[clamp(26px,9vw,64px)] uppercase leading-[0.95]">
                       {product.name}
                     </h2>
                   </Dialog.Title>
                   <div className="my-3 h-1 w-[50px] bg-accent lg:w-[70px]" />
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-[18px] leading-none text-accent sm:text-[24px]">
+                    <span className="font-serif text-[clamp(20px,6.5vw,42px)] leading-none text-accent">
                       ${product.priceMxn}
                     </span>
                     <span className="text-[9px] font-extrabold tracking-[0.12em] text-neutral-600">MXN</span>
