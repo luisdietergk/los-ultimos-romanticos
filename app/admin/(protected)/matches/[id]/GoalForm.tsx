@@ -108,7 +108,7 @@ export function GoalForm({
     <form
       action={action}
       onSubmit={() => onDone?.()}
-      className="grid grid-cols-1 gap-4 md:grid-cols-[1fr_auto_auto]"
+      className="grid grid-cols-1 gap-4"
     >
       <input type="hidden" name="matchId" value={matchId} />
       {isEdit && <input type="hidden" name="goalId" value={initial!.goalId} />}
@@ -225,7 +225,7 @@ export function GoalForm({
         </div>
       </div>
 
-      <div className="w-full max-w-[220px]">
+      <div className="w-full max-w-[560px]">
         <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-neutral-600">
           <span>Mapa de la jugada (clic)</span>
         </div>
@@ -266,6 +266,13 @@ export function GoalForm({
           <rect x="8" y="8" width="284" height="184" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
           <line x1="150" y1="8" x2="150" y2="192" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
           <circle cx="150" cy="100" r="26" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          <circle cx="150" cy="100" r="2" fill="var(--color-neutral-500)" />
+          <rect x="8" y="52" width="46" height="96" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          <rect x="8" y="76" width="18" height="48" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          <rect x="246" y="52" width="46" height="96" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          <rect x="274" y="76" width="18" height="48" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
+          <rect x="292" y="76" width="4" height="48" fill="var(--color-ink)" />
+          <rect x="4" y="76" width="4" height="48" fill="var(--color-ink)" />
           {markers.map((m, i) => {
             const pt = pitchPoint(m.x, m.y);
             return <circle key={i} cx={pt.x} cy={pt.y} r="5" fill={m.team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent)"} />;

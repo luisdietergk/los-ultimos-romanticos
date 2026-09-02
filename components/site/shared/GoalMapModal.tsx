@@ -105,6 +105,7 @@ export function GoalMapModal({
                   <rect x="246" y="52" width="46" height="96" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <rect x="274" y="76" width="18" height="48" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <rect x="292" y="76" width="4" height="48" fill="var(--color-ink)" />
+                  <rect x="4" y="76" width="4" height="48" fill="var(--color-ink)" />
                   {/* Context dots for "showing the play" — other players'
                       positions, purely illustrative (see PlayMarker). */}
                   {markers.map((m, i) => {
