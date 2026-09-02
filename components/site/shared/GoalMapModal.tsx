@@ -2,7 +2,7 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useRef } from "react";
-import { goalMouthPoint, pitchPoint, shotLineEnd, type PlayMarker } from "@/lib/derived";
+import { goalMouthPoint, pitchPoint, quadraticPath, shotCurveControl, shotLineEnd, type PlayMarker } from "@/lib/derived";
 
 const CLOSE_DRAG_THRESHOLD_PX = 90;
 const CLOSE_ANIM_MS = 220;
@@ -24,6 +24,8 @@ export interface GoalMapEntry {
   assistX: number | null;
   assistY: number | null;
   assistDorsal: string | null;
+  curveX: number | null;
+  curveY: number | null;
   playMarkers: PlayMarker[];
 }
 
@@ -59,6 +61,7 @@ export function GoalMapModal({
   const goalDot = hasGoalDot ? goalMouthPoint(g!.goalX!, g!.goalY!) : goalMouthPoint(0.5, 0.5);
   const hasAssist = !!g && g.assistX != null && g.assistY != null;
   const assist = hasAssist ? pitchPoint(g!.assistX!, g!.assistY!) : null;
+  const curveControl = has ? shotCurveControl(g!.curveX, g!.curveY, shot!, { x: lineX2, y: lineY2 }) : null;
   const markers = g?.playMarkers ?? [];
   // The scorer's own dot only carries a dorsal number when it's a real LUR
   // player — a rival's goal has no roster/dorsal to show.
@@ -205,12 +208,10 @@ export function GoalMapModal({
                   )}
                   {has && (
                     <>
-                      <line
+                      <path
                         key={g!.key}
-                        x1={shot!.x}
-                        y1={shot!.y}
-                        x2={lineX2}
-                        y2={lineY2}
+                        d={quadraticPath(shot!, curveControl!, { x: lineX2, y: lineY2 })}
+                        fill="none"
                         stroke="var(--color-accent)"
                         strokeWidth="1.6"
                         strokeDasharray="0.045 0.035"
@@ -226,7 +227,7 @@ export function GoalMapModal({
                           <animateMotion
                             dur="1.8s"
                             repeatCount="indefinite"
-                            path={`M ${assist.x} ${assist.y} L ${shot!.x} ${shot!.y} L ${lineX2} ${lineY2}`}
+                            path={`M ${assist.x} ${assist.y} L ${shot!.x} ${shot!.y} Q ${curveControl!.x} ${curveControl!.y} ${lineX2} ${lineY2}`}
                           />
                         </circle>
                       )}

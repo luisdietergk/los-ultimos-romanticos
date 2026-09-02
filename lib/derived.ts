@@ -31,6 +31,8 @@ export interface DerivedGoal {
   assistPlayerId: string | null;
   assistX: number | null;
   assistY: number | null;
+  curveX: number | null;
+  curveY: number | null;
   playMarkers: PlayMarker[];
 }
 
@@ -208,4 +210,25 @@ export function goalMouthPoint(gx: number, gy: number): { x: number; y: number }
 export function shotLineEnd(gx: number | null, isLur: boolean): number {
   const t = gx ?? 0.5;
   return 76 + (isLur ? t : 1 - t) * 48;
+}
+
+/** The shot-to-goal line's control point, in pitch-SVG pixel space — the
+ * admin's draggable "bend" handle in GoalForm.tsx and the public shot map's
+ * curve (GoalMapModal.tsx) both derive from this, so they always match.
+ * Defaults to the straight line's own midpoint (a quadratic bezier whose
+ * control point sits on the line between its endpoints renders straight)
+ * until an admin drags it elsewhere. */
+export function shotCurveControl(
+  curveX: number | null,
+  curveY: number | null,
+  shotPt: { x: number; y: number },
+  lineEnd: { x: number; y: number }
+): { x: number; y: number } {
+  if (curveX != null && curveY != null) return pitchPoint(curveX, curveY);
+  return { x: (shotPt.x + lineEnd.x) / 2, y: (shotPt.y + lineEnd.y) / 2 };
+}
+
+/** SVG path data for a quadratic bezier from `from` through `control` to `to`. */
+export function quadraticPath(from: { x: number; y: number }, control: { x: number; y: number }, to: { x: number; y: number }): string {
+  return `M ${from.x} ${from.y} Q ${control.x} ${control.y} ${to.x} ${to.y}`;
 }

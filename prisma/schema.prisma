@@ -88,6 +88,11 @@ model Goal {
   assistPlayer   Player?  @relation("GoalAssist", fields: [assistPlayerId], references: [id])
   assistX        Float?
   assistY        Float?
+  // Quadratic-bezier control point for the shot-to-goal line (same 0..1
+  // pitch-coordinate space as shotX/shotY) — null means a straight line
+  // (control point defaults to the line's own midpoint).
+  curveX         Float?
+  curveY         Float?
   // Extra context dots for "showing the play" (other players' positions at
   // the moment of the shot) — `{ team: "LUR" | "RIVAL", x, y }[]`, an
   // arbitrary-length list so a JSON column beats a full related table here.
