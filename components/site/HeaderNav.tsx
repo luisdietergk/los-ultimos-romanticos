@@ -48,7 +48,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
       </header>
 
       <nav
-        className="overflow-hidden bg-cream transition-[max-height] duration-300 ease-out"
+        className="relative z-40 overflow-hidden bg-cream transition-[max-height] duration-300 ease-out"
         style={{ maxHeight: open ? 480 : 0 }}
       >
         {NAV_ITEMS.map((item) => (

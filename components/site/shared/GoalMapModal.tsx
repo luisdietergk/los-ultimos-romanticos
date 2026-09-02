@@ -89,7 +89,7 @@ export function GoalMapModal({
                   centered, letterboxed map instead of the map actually
                   filling its box. */}
               <div className="px-4 pt-1">
-                <svg viewBox="0 0 300 200" className="mx-auto aspect-[300/200] w-full max-w-[320px]">
+                <svg viewBox="0 0 300 200" className="mx-auto aspect-[300/200] w-full max-w-[400px]">
                   <rect x="8" y="8" width="284" height="184" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <line x1="150" y1="8" x2="150" y2="192" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
                   <circle cx="150" cy="100" r="26" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
