@@ -21,6 +21,7 @@ export interface GoalMapEntry {
   goalY: number | null;
   assistX: number | null;
   assistY: number | null;
+  assistDorsal: string | null;
   playMarkers: PlayMarker[];
 }
 
@@ -57,6 +58,9 @@ export function GoalMapModal({
   const hasAssist = !!g && g.assistX != null && g.assistY != null;
   const assist = hasAssist ? pitchPoint(g!.assistX!, g!.assistY!) : null;
   const markers = g?.playMarkers ?? [];
+  // The scorer's own dot only carries a dorsal number when it's a real LUR
+  // player — a rival's goal has no roster/dorsal to show.
+  const scorerDorsal = g && g.isLur && g.dorsalLabel !== "#—" ? g.dorsalLabel.replace("#", "") : null;
 
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
@@ -110,14 +114,13 @@ export function GoalMapModal({
                       positions, purely illustrative (see PlayMarker). */}
                   {markers.map((m, i) => {
                     const pt = pitchPoint(m.x, m.y);
-                    return (
-                      <circle
-                        key={i}
-                        cx={pt.x}
-                        cy={pt.y}
-                        r="5"
-                        fill={m.team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent-light)"}
-                      />
+                    // Rival context dots stay solid black; LUR ones are a
+                    // hollow red ring — only the assist/scorer dots (below)
+                    // carry a dorsal number inside.
+                    return m.team === "RIVAL" ? (
+                      <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="var(--color-ink)" />
+                    ) : (
+                      <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="none" stroke="var(--color-accent)" strokeWidth="2" />
                     );
                   })}
                   {has && assist && (
@@ -162,10 +165,28 @@ export function GoalMapModal({
                         </circle>
                       )}
                       {assist && (
-                        <circle cx={assist.x} cy={assist.y} r="6" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
+                        <>
+                          <circle cx={assist.x} cy={assist.y} r="7.5" fill="none" stroke="var(--color-accent)" strokeWidth="2.5" />
+                          {g!.assistDorsal && (
+                            <text x={assist.x} y={assist.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
+                              {g!.assistDorsal}
+                            </text>
+                          )}
+                        </>
                       )}
-                      <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
-                      <circle cx={shot!.x} cy={shot!.y} r="3" fill="var(--color-ink)" />
+                      {scorerDorsal ? (
+                        <>
+                          <circle cx={shot!.x} cy={shot!.y} r="8.5" fill="none" stroke="var(--color-accent)" strokeWidth="3" />
+                          <text x={shot!.x} y={shot!.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
+                            {scorerDorsal}
+                          </text>
+                        </>
+                      ) : (
+                        <>
+                          <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
+                          <circle cx={shot!.x} cy={shot!.y} r="3" fill="var(--color-ink)" />
+                        </>
+                      )}
                     </>
                   )}
                 </svg>

@@ -74,6 +74,7 @@ async function resolveGoalFields(formData: FormData) {
   const shotY = floatOrNull(formData, "shotY");
   const goalX = floatOrNull(formData, "goalX");
   const goalY = floatOrNull(formData, "goalY");
+  const assistPlayerId = nullableString(formData, "assistPlayerId");
   const assistX = floatOrNull(formData, "assistX");
   const assistY = floatOrNull(formData, "assistY");
   const playMarkers = parsePlayMarkers(formData.get("playMarkers"));
@@ -103,6 +104,7 @@ async function resolveGoalFields(formData: FormData) {
     shotY,
     goalX,
     goalY,
+    assistPlayerId,
     assistX,
     assistY,
     playMarkers: playMarkers as unknown as Prisma.InputJsonValue,

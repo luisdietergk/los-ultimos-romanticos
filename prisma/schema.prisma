@@ -66,62 +66,67 @@ model Match {
 }
 
 model Goal {
-  id         String   @id @default(cuid())
-  matchId    String
-  match      Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  minute     Int
-  team       GoalTeam
-  playerId   String?
-  player     Player?  @relation(fields: [playerId], references: [id])
-  scorerName String
-  note       String?
-  videoUrl   String?
-  shotX      Float?
-  shotY      Float?
-  goalX      Float?
-  goalY      Float?
-  // Where the assist pass started from (LUR only — an assist is always a
-  // teammate) — the public shot map animates a play from here through the
-  // shooter's own shotX/shotY and on to the goal.
-  assistX    Float?
-  assistY    Float?
+  id             String   @id @default(cuid())
+  matchId        String
+  match          Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  minute         Int
+  team           GoalTeam
+  playerId       String?
+  player         Player?  @relation("GoalScorer", fields: [playerId], references: [id])
+  scorerName     String
+  note           String?
+  videoUrl       String?
+  shotX          Float?
+  shotY          Float?
+  goalX          Float?
+  goalY          Float?
+  // Who gave the assist and where the pass started from (LUR only — an
+  // assist is always a teammate) — the public shot map animates a play from
+  // here through the shooter's own shotX/shotY and on to the goal, and shows
+  // this player's dorsal on the assist dot.
+  assistPlayerId String?
+  assistPlayer   Player?  @relation("GoalAssist", fields: [assistPlayerId], references: [id])
+  assistX        Float?
+  assistY        Float?
   // Extra context dots for "showing the play" (other players' positions at
   // the moment of the shot) — `{ team: "LUR" | "RIVAL", x, y }[]`, an
   // arbitrary-length list so a JSON column beats a full related table here.
-  playMarkers Json     @default("[]")
-  createdAt  DateTime @default(now())
+  playMarkers    Json     @default("[]")
+  createdAt      DateTime @default(now())
 
   @@index([matchId])
   @@index([playerId])
+  @@index([assistPlayerId])
 }
 
 model Player {
-  id          String  @id @default(cuid())
-  dorsal      String
-  name        String
-  position    String
-  nationality String  @default("México")
-  apodo       String?
-  quote       String?
-  description String?
-  pj          Int     @default(0)
-  assists     Int     @default(0)
-  photoUrl    String?
-  sortOrder   Int     @default(0)
-  isActive    Boolean @default(true)
-  goals       Goal[]
+  id            String  @id @default(cuid())
+  dorsal        String
+  name          String
+  position      String
+  nationality   String  @default("México")
+  apodo         String?
+  quote         String?
+  description   String?
+  pj            Int     @default(0)
+  assists       Int     @default(0)
+  photoUrl      String?
+  sortOrder     Int     @default(0)
+  isActive      Boolean @default(true)
+  goals         Goal[]  @relation("GoalScorer")
+  assistedGoals Goal[]  @relation("GoalAssist")
 }
 
 model ShopProduct {
-  id               String   @id @default(cuid())
-  name             String
-  sizesCsv         String   @default("S,M,L,XL")
-  priceMxn         Int
-  description      String
-  photoUrl         String?
-  detailImageUrls  String[] @default([])
-  zoomed           Boolean  @default(false)
-  sortOrder        Int      @default(0)
+  id              String   @id @default(cuid())
+  name            String
+  sizesCsv        String   @default("S,M,L,XL")
+  priceMxn        Int
+  description     String
+  photoUrl        String?
+  detailImageUrls String[] @default([])
+  zoomed          Boolean  @default(false)
+  sortOrder       Int      @default(0)
 }
 
 model KitImage {

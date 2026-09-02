@@ -28,6 +28,7 @@ export interface DerivedGoal {
   shotY: number | null;
   goalX: number | null;
   goalY: number | null;
+  assistPlayerId: string | null;
   assistX: number | null;
   assistY: number | null;
   playMarkers: PlayMarker[];

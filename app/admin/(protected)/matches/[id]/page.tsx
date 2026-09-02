@@ -37,6 +37,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     shotY: g.shotY,
     goalX: g.goalX,
     goalY: g.goalY,
+    assistPlayerId: g.assistPlayerId,
     assistX: g.assistX,
     assistY: g.assistY,
     playMarkers: (g.playMarkers as unknown as PlayMarker[]) ?? [],

@@ -26,6 +26,7 @@ export interface GoalFormInitial {
   shotY: number | null;
   goalX: number | null;
   goalY: number | null;
+  assistPlayerId: string | null;
   assistX: number | null;
   assistY: number | null;
   playMarkers: PlayMarker[];
@@ -54,10 +55,12 @@ export function GoalForm({
 }) {
   const isEdit = !!initial;
   const [team, setTeam] = useState<"LUR" | "RIVAL">(initial?.team ?? "LUR");
+  const [playerId, setPlayerId] = useState<string>(initial?.playerId ?? "");
   const [shotX, setShotX] = useState<number | null>(initial?.shotX ?? null);
   const [shotY, setShotY] = useState<number | null>(initial?.shotY ?? null);
   const [goalX, setGoalX] = useState<number | null>(initial?.goalX ?? null);
   const [goalY, setGoalY] = useState<number | null>(initial?.goalY ?? null);
+  const [assistPlayerId, setAssistPlayerId] = useState<string>(initial?.assistPlayerId ?? "");
   const [assistX, setAssistX] = useState<number | null>(initial?.assistX ?? null);
   const [assistY, setAssistY] = useState<number | null>(initial?.assistY ?? null);
   const [markers, setMarkers] = useState<PlayMarker[]>(initial?.playMarkers ?? []);
@@ -101,6 +104,8 @@ export function GoalForm({
   const shotDot = shotX != null && shotY != null ? pitchPoint(shotX, shotY) : null;
   const goalDot = goalX != null && goalY != null ? goalMouthPoint(goalX, goalY) : null;
   const assistDot = assistX != null && assistY != null ? pitchPoint(assistX, assistY) : null;
+  const scorerDorsal = team === "LUR" ? players.find((p) => p.id === playerId)?.dorsal ?? null : null;
+  const assistDorsal = players.find((p) => p.id === assistPlayerId)?.dorsal ?? null;
 
   const action = isEdit ? updateGoal : addGoal;
 
@@ -159,7 +164,8 @@ export function GoalForm({
               <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Anotador</label>
               <select
                 name="playerId"
-                defaultValue={initial?.playerId ?? ""}
+                value={playerId}
+                onChange={(e) => setPlayerId(e.target.value)}
                 required
                 className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
               >
@@ -256,6 +262,20 @@ export function GoalForm({
             {pitchMode === "assist" ? "el asistente" : pitchMode === "lur" ? "al jugador LUR" : "al jugador rival"}.
           </p>
         )}
+        {(pitchMode === "assist" || assistDot) && (
+          <select
+            value={assistPlayerId}
+            onChange={(e) => setAssistPlayerId(e.target.value)}
+            className="mb-1.5 w-full max-w-[280px] border border-ink/30 bg-transparent px-2 py-1 text-xs"
+          >
+            <option value="">Elige quién asistió…</option>
+            {players.map((p) => (
+              <option key={p.id} value={p.id}>
+                #{p.dorsal} — {p.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         <svg
           ref={pitchRef}
@@ -275,25 +295,42 @@ export function GoalForm({
           <rect x="4" y="76" width="4" height="48" fill="var(--color-ink)" />
           {markers.map((m, i) => {
             const pt = pitchPoint(m.x, m.y);
-            return <circle key={i} cx={pt.x} cy={pt.y} r="5" fill={m.team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent)"} />;
+            // Rival stays a solid black dot; LUR is a hollow red ring — only
+            // the assist/scorer dots (below) carry a dorsal number inside.
+            return m.team === "RIVAL" ? (
+              <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="var(--color-ink)" />
+            ) : (
+              <circle key={i} cx={pt.x} cy={pt.y} r="5" fill="none" stroke="var(--color-accent)" strokeWidth="2" />
+            );
           })}
           {assistDot && (
             <>
-              <circle cx={assistDot.x} cy={assistDot.y} r="6.5" fill="var(--color-accent-light)" stroke="var(--color-accent)" strokeWidth="2" />
-              <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="7" fontWeight="bold" fill="var(--color-ink)">
-                A
-              </text>
+              <circle cx={assistDot.x} cy={assistDot.y} r="7.5" fill="none" stroke="var(--color-accent)" strokeWidth="2.5" />
+              {assistDorsal && (
+                <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
+                  {assistDorsal}
+                </text>
+              )}
             </>
           )}
-          {shotDot && (
-            <>
-              <circle cx={shotDot.x} cy={shotDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
-              <circle cx={shotDot.x} cy={shotDot.y} r="3" fill="var(--color-ink)" />
-            </>
-          )}
+          {shotDot &&
+            (scorerDorsal ? (
+              <>
+                <circle cx={shotDot.x} cy={shotDot.y} r="8.5" fill="none" stroke="var(--color-accent)" strokeWidth="3" />
+                <text x={shotDot.x} y={shotDot.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
+                  {scorerDorsal}
+                </text>
+              </>
+            ) : (
+              <>
+                <circle cx={shotDot.x} cy={shotDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
+                <circle cx={shotDot.x} cy={shotDot.y} r="3" fill="var(--color-ink)" />
+              </>
+            ))}
         </svg>
         <input type="hidden" name="shotX" value={shotX ?? ""} readOnly />
         <input type="hidden" name="shotY" value={shotY ?? ""} readOnly />
+        <input type="hidden" name="assistPlayerId" value={assistPlayerId} readOnly />
         <input type="hidden" name="assistX" value={assistX ?? ""} readOnly />
         <input type="hidden" name="assistY" value={assistY ?? ""} readOnly />
         <input type="hidden" name="playMarkers" value={JSON.stringify(markers)} readOnly />
@@ -317,6 +354,7 @@ export function GoalForm({
               onClick={() => {
                 setAssistX(null);
                 setAssistY(null);
+                setAssistPlayerId("");
               }}
               className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
             >

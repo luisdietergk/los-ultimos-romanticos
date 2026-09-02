@@ -74,6 +74,7 @@ function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntr
     .sort((a, b) => a.minute - b.minute)
     .map((g: DerivedGoal) => {
       const player = g.playerId ? roster.find((p) => p.id === g.playerId) : undefined;
+      const assistPlayer = g.assistPlayerId ? roster.find((p) => p.id === g.assistPlayerId) : undefined;
       return {
         key: g.id,
         minute: g.minute,
@@ -91,6 +92,7 @@ function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntr
         goalY: g.goalY,
         assistX: g.assistX,
         assistY: g.assistY,
+        assistDorsal: assistPlayer?.dorsal ?? null,
         playMarkers: g.playMarkers,
       };
     });
