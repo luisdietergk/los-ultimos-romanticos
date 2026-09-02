@@ -90,6 +90,15 @@ h1, h2, h3, h4 {
 @keyframes podios-open { from { height: 0 } to { height: var(--radix-collapsible-content-height) } }
 @keyframes podios-close { from { height: var(--radix-collapsible-content-height) } to { height: 0 } }
 
+/* GoalMapModal's entrance only — its own close (drag, outside tap, Escape)
+   is animated imperatively in JS instead (see animateClosed()), so the sheet
+   never jumps back to translateY(0) mid-drag the way a data-[state=closed]
+   keyframe driven from a fixed "from" value would. */
+@keyframes lur-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
 /* Slightly slower/gentler than the browser's default (250ms) for the shop
    rack's tap-to-open photo transition (view-transition-name is set per
    product in ShopRack.tsx/ProductSheetModal.tsx). */
