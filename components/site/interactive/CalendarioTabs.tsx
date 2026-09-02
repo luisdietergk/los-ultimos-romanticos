@@ -50,18 +50,20 @@ function crestFor(m: DerivedMatch): string | null {
 
 /** Outcome badge for a Resultados row — matches the prototype's `fixtures()`
  * badge logic (victoria = ink, derrota = accent, empate = outlined, cancelled
- * or a finished-with-zero-goals match = muted "— · —", never a fabricated
- * 0-0), plus an explicit VICTORIA/DERROTA/EMPATE word (score alone wasn't
- * legible enough at a glance). */
-function outcomeBadge(m: DerivedMatch): { result: string | null; score: string; className: string } {
+ * or a finished-with-zero-goals match = muted "— · —"). The VICTORIA/DERROTA/
+ * EMPATE word and the score box are two separate pieces now (word to the
+ * box's left, plain text) rather than one badge stacking both. */
+function outcomeBadge(
+  m: DerivedMatch
+): { result: string | null; resultClassName: string; score: string; boxClassName: string } {
   if (m.status === "CANCELLED" || m.goals.length === 0) {
-    return { result: null, score: "— · —", className: "bg-neutral-300 text-neutral-800" };
+    return { result: null, resultClassName: "", score: "— · —", boxClassName: "bg-neutral-300 text-neutral-800" };
   }
   const { lur, rival } = matchScore(m);
   const score = `${lur} - ${rival}`;
-  if (lur > rival) return { result: "VICTORIA", score, className: "bg-ink text-cream" };
-  if (lur < rival) return { result: "DERROTA", score, className: "bg-accent text-cream" };
-  return { result: "EMPATE", score, className: "border border-ink bg-transparent text-ink" };
+  if (lur > rival) return { result: "VICTORIA", resultClassName: "text-ink", score, boxClassName: "bg-ink text-cream" };
+  if (lur < rival) return { result: "DERROTA", resultClassName: "text-accent", score, boxClassName: "bg-accent text-cream" };
+  return { result: "EMPATE", resultClassName: "text-neutral-700", score, boxClassName: "border border-ink bg-transparent text-ink" };
 }
 
 function buildGoalEntries(m: DerivedMatch): GoalMapEntry[] {
@@ -210,15 +212,26 @@ export function CalendarioTabs({
                       {formatResultDate(m.kickoffAt)}
                     </div>
                   </div>
-                  <span className={`flex min-w-[76px] flex-col items-center px-3 py-2 text-center ${badge.className}`}>
-                    {badge.result ? (
-                      <>
-                        <span className="text-[13px] font-black uppercase leading-none tracking-[0.02em]">{badge.result}</span>
-                        <span className="mt-1 text-[10.5px] font-bold tabular-nums leading-none opacity-80">{badge.score}</span>
-                      </>
-                    ) : (
-                      <span className="text-[14px] font-black tabular-nums leading-none">{badge.score}</span>
+                  <span className="flex items-center gap-2.5">
+                    {badge.result && (
+                      <span className={`text-[11px] font-extrabold uppercase tracking-[0.06em] ${badge.resultClassName}`}>
+                        {badge.result}
+                      </span>
                     )}
+                    <span className={`min-w-[52px] px-3 py-2 text-center text-[14px] font-black tabular-nums leading-none ${badge.boxClassName}`}>
+                      {badge.score}
+                    </span>
+                    <svg
+                      width="14"
+                      height="8"
+                      viewBox="0 0 14 8"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      className={`flex-none text-neutral-500 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                    >
+                      <path d="M1 1l6 6 6-6" />
+                    </svg>
                   </span>
                 </button>
 
@@ -227,7 +240,7 @@ export function CalendarioTabs({
                     {goals.length === 0 ? (
                       <p className="pb-3 text-[12px] font-semibold text-neutral-600">Sin goles registrados.</p>
                     ) : (
-                      <div className="flex flex-col gap-1.5">
+                      <div className="flex flex-col">
                         {goals.map((entry, i) => (
                           <button
                             key={entry.key}
@@ -236,10 +249,17 @@ export function CalendarioTabs({
                               setModalMatchId(m.id);
                               setGoalIndex(i);
                             }}
-                            className="flex items-center gap-3 border border-ink/15 bg-ink/[0.03] px-3 py-2.5 text-left"
+                            className="flex items-center gap-3 py-2.5 text-left"
                           >
                             <span className="w-8 flex-none font-serif text-[16px] leading-none text-accent">{entry.minute}&apos;</span>
                             <span className="flex-1 text-[12.5px] font-extrabold uppercase leading-[1.3]">{entry.title}</span>
+                            <span
+                              className={`flex-none px-1.5 py-0.5 text-[8.5px] font-extrabold uppercase tracking-[0.08em] ${
+                                entry.isLur ? "bg-accent text-cream" : "bg-neutral-300 text-neutral-700"
+                              }`}
+                            >
+                              {entry.isLur ? "LUR" : "RIVAL"}
+                            </span>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-none text-neutral-500">
                               <path d="M9 5l7 7-7 7" />
                             </svg>
