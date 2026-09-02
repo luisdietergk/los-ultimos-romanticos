@@ -96,7 +96,7 @@ export function ProductSheetModal({
                     text for width. The photo itself leans right within its
                     box (object-right) to leave the overlaid text less busy. */}
                 <div
-                  className="relative aspect-[3/4] w-full"
+                  className="relative ml-auto aspect-[3/4] w-[80%]"
                   // Only the main photo (index 0) is the same element the
                   // rack thumbnail represents, so only it gets the shared
                   // name — see ShopRack.tsx's setOpenIdWithTransition. The
@@ -158,7 +158,7 @@ export function ProductSheetModal({
               {/* The only interactive way to browse the gallery — the main
                   photo above is static, tapping a thumbnail here swaps it. */}
               {gallery.length > 1 && (
-                <div className="mt-2 grid flex-none grid-cols-5 gap-2">
+                <div className="mt-1 grid flex-none grid-cols-5 gap-2">
                   {gallery.map((url, i) => (
                     <button
                       key={url}
@@ -174,7 +174,7 @@ export function ProductSheetModal({
                 </div>
               )}
 
-              <div className="flex-none pt-2">
+              <div className="flex-none pt-1">
                 <div className="text-[9px] font-extrabold uppercase tracking-[0.2em]">TALLA</div>
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {sizes.map((s) => {
