@@ -67,7 +67,6 @@ export function GoalMapModal({
   const scorerDorsal = g && g.isLur && g.dorsalLabel !== "#—" ? g.dorsalLabel.replace("#", "") : null;
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ startY: number; dragging: boolean }>({ startY: 0, dragging: false });
 
   // Slides the sheet the rest of the way off-screen, then only *after* that
   // finishes hands off to the real onClose — kept as a controlled dialog
@@ -86,32 +85,46 @@ export function GoalMapModal({
     window.setTimeout(onClose, CLOSE_ANIM_MS);
   }
 
-  function onHandlePointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  // Drag-to-dismiss works from anywhere on the sheet, not just the grabber
+  // bar — but pointer capture is deferred until a real downward drag is
+  // detected (same pattern as ShopRack.tsx/SquadMarquee.tsx's own drag
+  // handling), so a plain tap still reaches buttons/links underneath
+  // (prev/next, "VER GOL") instead of every tap being swallowed as a drag.
+  function onContentPointerDown(e: React.PointerEvent<HTMLDivElement>) {
     const el = contentRef.current;
     if (!el) return;
-    dragRef.current = { startY: e.clientY, dragging: true };
-    el.style.transition = "none";
-    e.currentTarget.setPointerCapture(e.pointerId);
-  }
-  function onHandlePointerMove(e: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current.dragging) return;
-    const el = contentRef.current;
-    if (!el) return;
-    const dy = Math.max(0, e.clientY - dragRef.current.startY);
-    el.style.transform = `translateY(${dy}px)`;
-  }
-  function onHandlePointerUp(e: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current.dragging) return;
-    dragRef.current.dragging = false;
-    const el = contentRef.current;
-    if (!el) return;
-    const dy = e.clientY - dragRef.current.startY;
-    if (dy > CLOSE_DRAG_THRESHOLD_PX) {
-      animateClosed();
-    } else {
-      el.style.transition = `transform ${CLOSE_ANIM_MS}ms cubic-bezier(0.22,1,0.36,1)`;
-      el.style.transform = "translateY(0px)";
-    }
+    const container = e.currentTarget;
+    const pointerId = e.pointerId;
+    const startY = e.clientY;
+    let captured = false;
+
+    const onMove = (ev: PointerEvent) => {
+      const dy = ev.clientY - startY;
+      if (!captured) {
+        if (dy <= 8) return;
+        captured = true;
+        el.style.transition = "none";
+        container.setPointerCapture(pointerId);
+      }
+      el.style.transform = `translateY(${Math.max(0, dy)}px)`;
+    };
+    const onUp = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (!captured) return;
+      container.releasePointerCapture(pointerId);
+      const dy = ev.clientY - startY;
+      if (dy > CLOSE_DRAG_THRESHOLD_PX) {
+        animateClosed();
+      } else {
+        el.style.transition = `transform ${CLOSE_ANIM_MS}ms cubic-bezier(0.22,1,0.36,1)`;
+        el.style.transform = "translateY(0px)";
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
   }
 
   return (
@@ -125,20 +138,14 @@ export function GoalMapModal({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
         <Dialog.Content
           ref={contentRef}
-          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[100dvh] w-full max-w-[480px] overflow-hidden bg-cream data-[state=open]:animate-[lur-sheet-in_0.32s_cubic-bezier(0.22,1,0.36,1)]"
+          onPointerDown={onContentPointerDown}
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[100dvh] w-full max-w-[480px] touch-none overflow-hidden rounded-t-[20px] bg-cream data-[state=open]:animate-[lur-sheet-in_0.32s_cubic-bezier(0.22,1,0.36,1)]"
           aria-describedby={undefined}
         >
           {g && (
             <>
               <div className="relative border-b-2 border-ink px-4 pb-2 pt-2 text-center">
-                <div
-                  onPointerDown={onHandlePointerDown}
-                  onPointerMove={onHandlePointerMove}
-                  onPointerUp={onHandlePointerUp}
-                  onPointerCancel={onHandlePointerUp}
-                  className="absolute inset-x-0 -top-0.5 flex touch-none justify-center py-2"
-                  aria-hidden
-                >
+                <div className="absolute inset-x-0 -top-0.5 flex justify-center py-2" aria-hidden>
                   <span className="h-1 w-10 bg-ink/30" />
                 </div>
                 {g.photoUrl && (
