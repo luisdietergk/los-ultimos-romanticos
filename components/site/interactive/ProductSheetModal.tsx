@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import type { ShopProduct } from "../Tienda";
 
@@ -31,14 +31,12 @@ const PERKS = [
 ];
 
 /** Full-page product detail view — opened by tapping a rack item. The whole
- * sheet is sized to the viewport (`h-dvh`, no page scroll) with the photo
- * area as a native horizontal scroll-snap carousel: swipe (or tap a number)
- * to move between the main photo and its "detail" shots (`detailImageUrls`,
- * set in /admin/shop) instead of a static thumbnail grid, which didn't leave
- * enough room for everything to fit on one screen. Everything above/below
- * the carousel is fixed-height chrome; the carousel absorbs whatever space
- * is left. The hanger graphic itself is baked into each product photo (not
- * drawn here). */
+ * sheet is sized to the viewport (`h-dvh`, no page scroll). The main photo
+ * itself is static (not swipeable) — only the thumbnail strip below it is
+ * interactive, tapping one swaps the main photo to it. Everything above/
+ * below the main photo is fixed-height chrome; the photo absorbs whatever
+ * space is left. The hanger graphic itself is baked into each product photo
+ * (not drawn here). */
 export function ProductSheetModal({
   product,
   onClose,
@@ -50,7 +48,6 @@ export function ProductSheetModal({
   const [activeImage, setActiveImage] = useState(0);
   const [galleryForProductId, setGalleryForProductId] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
-  const carouselRef = useRef<HTMLDivElement>(null);
   const open = product != null;
 
   // Reset the selected gallery image (and favorite toggle) when a different
@@ -65,22 +62,6 @@ export function ProductSheetModal({
   }
 
   const gallery = product ? [product.photoUrl, ...product.detailImageUrls].filter((u): u is string => !!u) : [];
-
-  const scrollToImage = (i: number) => {
-    const el = carouselRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
-  };
-
-  // Keeps the number indicator in sync while the user swipes the carousel
-  // directly (rather than tapping a number) — cheap enough to run on every
-  // scroll event without debouncing.
-  const onCarouselScroll = () => {
-    const el = carouselRef.current;
-    if (!el || el.clientWidth === 0) return;
-    const i = Math.round(el.scrollLeft / el.clientWidth);
-    setActiveImage((prev) => (prev === i ? prev : i));
-  };
 
   const sizes = product
     ? product.sizesCsv
@@ -151,47 +132,36 @@ export function ProductSheetModal({
                   </button>
                 </div>
 
-                <div className="relative min-h-0 flex-1">
-                  <div
-                    ref={carouselRef}
-                    onScroll={onCarouselScroll}
-                    className="flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                  >
-                    {gallery.map((url, i) => (
-                      <div
-                        key={url}
-                        className="relative h-full w-full flex-none snap-center"
-                        // Only the main photo (index 0) is the same element
-                        // the rack thumbnail represents, so only it gets the
-                        // shared name — see ShopRack.tsx's setOpenIdWithTransition.
-                        // It keeps the name even while scrolled off-screen:
-                        // the sheet always opens on index 0, which is the
-                        // only moment the name is actually needed.
-                        style={{ viewTransitionName: i === 0 ? `shop-photo-${product.id}` : undefined }}
-                      >
-                        <Image
-                          src={url}
-                          alt={product.name}
-                          fill
-                          sizes="420px"
-                          className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
-                        />
-                      </div>
-                    ))}
-                  </div>
+                <div
+                  className="relative min-h-0 flex-1"
+                  // Only the main photo (index 0) is the same element the
+                  // rack thumbnail represents, so only it gets the shared
+                  // name — see ShopRack.tsx's setOpenIdWithTransition. The
+                  // sheet always opens on index 0, which is the only moment
+                  // the name is actually needed.
+                  style={{ viewTransitionName: activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
+                >
+                  {gallery[activeImage] && (
+                    <Image
+                      src={gallery[activeImage]}
+                      alt={product.name}
+                      fill
+                      sizes="420px"
+                      className="object-contain"
+                    />
+                  )}
                 </div>
               </div>
 
-              {/* The big photo above is still swipeable (a real carousel) —
-                  this full-width row (spanning under both columns, like the
-                  reference) is just a faster way to jump straight to one. */}
+              {/* The only interactive way to browse the gallery — the main
+                  photo above is static, tapping a thumbnail here swaps it. */}
               {gallery.length > 1 && (
                 <div className="mt-2 grid flex-none grid-cols-5 gap-2">
                   {gallery.map((url, i) => (
                     <button
                       key={url}
                       type="button"
-                      onClick={() => scrollToImage(i)}
+                      onClick={() => setActiveImage(i)}
                       className={`relative aspect-square overflow-hidden border-2 ${
                         i === activeImage ? "border-ink" : "border-neutral-300"
                       }`}
