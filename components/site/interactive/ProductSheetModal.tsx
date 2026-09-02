@@ -110,7 +110,7 @@ export function ProductSheetModal({
                       alt={product.name}
                       fill
                       sizes="480px"
-                      className={`object-contain object-right ${product.zoomed ? "translate-y-[14%] scale-150" : ""}`}
+                      className={`object-contain object-right ${product.zoomed ? "translate-y-[calc(14%+70px)] scale-150" : ""}`}
                     />
                   )}
                 </div>
