@@ -1,7 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import type { ShopProduct } from "../Tienda";
 
@@ -30,13 +30,15 @@ const PERKS = [
   },
 ];
 
-/** Full-page product detail view — opened by tapping a rack item. Redesigned
- * to match a full product-page layout (title/price/description, a large
- * hanging product shot, and a detail-shot gallery below it) rather than the
- * small bottom-sheet this used to be, since a product can now carry extra
- * "detail" photos (`detailImageUrls`, set in /admin/shop) alongside its main
- * photo — those need real room to be seen at a useful size. The hanger
- * graphic itself is baked into each product photo (not drawn here). */
+/** Full-page product detail view — opened by tapping a rack item. The whole
+ * sheet is sized to the viewport (`h-dvh`, no page scroll) with the photo
+ * area as a native horizontal scroll-snap carousel: swipe (or tap a number)
+ * to move between the main photo and its "detail" shots (`detailImageUrls`,
+ * set in /admin/shop) instead of a static thumbnail grid, which didn't leave
+ * enough room for everything to fit on one screen. Everything above/below
+ * the carousel is fixed-height chrome; the carousel absorbs whatever space
+ * is left. The hanger graphic itself is baked into each product photo (not
+ * drawn here). */
 export function ProductSheetModal({
   product,
   onClose,
@@ -48,6 +50,7 @@ export function ProductSheetModal({
   const [activeImage, setActiveImage] = useState(0);
   const [galleryForProductId, setGalleryForProductId] = useState<string | null>(null);
   const [favorited, setFavorited] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
   const open = product != null;
 
   // Reset the selected gallery image (and favorite toggle) when a different
@@ -62,6 +65,22 @@ export function ProductSheetModal({
   }
 
   const gallery = product ? [product.photoUrl, ...product.detailImageUrls].filter((u): u is string => !!u) : [];
+
+  const scrollToImage = (i: number) => {
+    const el = carouselRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+  };
+
+  // Keeps the number indicator in sync while the user swipes the carousel
+  // directly (rather than tapping a number) — cheap enough to run on every
+  // scroll event without debouncing.
+  const onCarouselScroll = () => {
+    const el = carouselRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveImage((prev) => (prev === i ? prev : i));
+  };
 
   const sizes = product
     ? product.sizesCsv
@@ -85,46 +104,46 @@ export function ProductSheetModal({
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
-        <Dialog.Content
-          className="fixed inset-0 z-50 overflow-y-auto bg-cream"
-          aria-describedby={undefined}
-        >
+        <Dialog.Content className="fixed inset-0 z-50 overflow-hidden bg-cream" aria-describedby={undefined}>
           {product && (
-            <div className="mx-auto w-full max-w-[480px] px-6 pb-10 pt-14 lg:max-w-[960px] lg:px-16 lg:pt-20">
-              <Dialog.Close className="fixed right-4 top-4 z-10 flex h-9 w-9 items-center justify-center border-2 border-ink bg-cream text-2xl leading-none lg:right-8 lg:top-8">
+            <div className="mx-auto flex h-dvh w-full max-w-[480px] flex-col px-6 pb-4 pt-4 lg:max-w-[960px] lg:px-16 lg:pb-8 lg:pt-8">
+              <Dialog.Close className="absolute right-4 top-4 z-10 flex h-9 w-9 flex-none items-center justify-center border-2 border-ink bg-cream text-2xl leading-none lg:right-8 lg:top-8">
                 ×
               </Dialog.Close>
 
-              <div className="grid grid-cols-[0.85fr_1.4fr] items-start gap-3 lg:gap-16">
-                <div>
+              <div className="flex min-h-0 flex-1 items-stretch gap-4 overflow-hidden pr-12 lg:gap-16 lg:pr-16">
+                <div className="flex w-[38%] flex-none flex-col overflow-y-auto">
                   <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
                   <Dialog.Title asChild>
-                    <h2 className="mt-3 font-serif text-[22px] uppercase leading-[0.95] sm:text-[32px] lg:text-[42px]">
+                    <h2 className="mt-2 font-serif text-[18px] uppercase leading-[0.95] sm:text-[26px] lg:text-[42px]">
                       {product.name}
                     </h2>
                   </Dialog.Title>
-                  <div className="my-4 h-1 w-[70px] bg-accent" />
+                  <div className="my-3 h-1 w-[50px] bg-accent lg:w-[70px]" />
                   <div className="flex items-baseline gap-1.5">
-                    <span className="font-serif text-[22px] leading-none text-accent sm:text-[28px]">
+                    <span className="font-serif text-[18px] leading-none text-accent sm:text-[24px]">
                       ${product.priceMxn}
                     </span>
-                    <span className="text-[10px] font-extrabold tracking-[0.12em] text-neutral-600">MXN</span>
+                    <span className="text-[9px] font-extrabold tracking-[0.12em] text-neutral-600">MXN</span>
                   </div>
-                  <p className="mt-4 text-[13px] leading-[1.7] text-neutral-700">{product.description}</p>
+                  <p className="mt-3 text-[11.5px] leading-[1.55] text-neutral-700 lg:text-[13px] lg:leading-[1.7]">
+                    {product.description}
+                  </p>
                   <button
                     type="button"
                     onClick={() => setFavorited((v) => !v)}
-                    className="mt-5 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.14em] text-ink"
+                    className="mt-3 flex items-center gap-1.5 text-[9.5px] font-extrabold uppercase tracking-[0.12em] text-ink lg:mt-5 lg:text-[11px]"
                   >
                     <svg
-                      width="17"
-                      height="17"
+                      width="15"
+                      height="15"
                       viewBox="0 0 24 24"
                       fill={favorited ? "var(--color-accent)" : "none"}
                       stroke={favorited ? "var(--color-accent)" : "currentColor"}
                       strokeWidth="1.8"
+                      className="flex-none"
                     >
                       <path d="M12 20.6S3.6 14.6 3.6 9.1A4.6 4.6 0 0 1 12 6.4a4.6 4.6 0 0 1 8.4 2.7c0 5.5-8.4 11.5-8.4 11.5z" />
                     </svg>
@@ -132,61 +151,57 @@ export function ProductSheetModal({
                   </button>
                 </div>
 
-                <div
-                  className="relative mx-auto h-[400px] w-full max-w-[340px] lg:h-[520px] lg:max-w-[420px]"
-                  // Only the main photo (gallery index 0) is the same
-                  // element the rack thumbnail represents, so only it gets
-                  // the shared name — see ShopRack.tsx's setOpenIdWithTransition.
-                  style={{ viewTransitionName: product && activeImage === 0 ? `shop-photo-${product.id}` : undefined }}
-                >
-                  {gallery[activeImage] && (
-                    <Image
-                      src={gallery[activeImage]}
-                      alt={product.name}
-                      fill
-                      sizes="420px"
-                      className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
-                    />
+                <div className="relative min-h-0 flex-1">
+                  <div
+                    ref={carouselRef}
+                    onScroll={onCarouselScroll}
+                    className="flex h-full snap-x snap-mandatory overflow-x-auto overflow-y-hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    {gallery.map((url, i) => (
+                      <div
+                        key={url}
+                        className="relative h-full w-full flex-none snap-center"
+                        // Only the main photo (index 0) is the same element
+                        // the rack thumbnail represents, so only it gets the
+                        // shared name — see ShopRack.tsx's setOpenIdWithTransition.
+                        // It keeps the name even while scrolled off-screen:
+                        // the sheet always opens on index 0, which is the only
+                        // moment the name is actually needed.
+                        style={{ viewTransitionName: i === 0 ? `shop-photo-${product.id}` : undefined }}
+                      >
+                        <Image
+                          src={url}
+                          alt={product.name}
+                          fill
+                          sizes="420px"
+                          className="object-contain drop-shadow-[0_24px_30px_rgba(32,30,29,0.28)]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {gallery.length > 1 && (
+                    <div className="pointer-events-none absolute inset-x-0 bottom-1 flex justify-center gap-2.5">
+                      {gallery.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => scrollToImage(i)}
+                          className={`pointer-events-auto text-[10px] font-extrabold tracking-[0.08em] ${
+                            i === activeImage ? "border-b-2 border-accent text-accent" : "text-neutral-400"
+                          }`}
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
 
-              {gallery.length > 1 && (
-                <div className="mt-8 flex items-start gap-4">
-                  <div className="flex flex-none flex-col gap-3 pt-1.5">
-                    {gallery.map((_, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setActiveImage(i)}
-                        className={`text-left text-[11px] font-extrabold tracking-[0.1em] ${
-                          i === activeImage ? "border-b-2 border-accent text-accent" : "text-neutral-400"
-                        }`}
-                      >
-                        {String(i + 1).padStart(2, "0")}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
-                    {gallery.map((url, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => setActiveImage(i)}
-                        className={`relative aspect-square overflow-hidden border-2 ${
-                          i === activeImage ? "border-ink" : "border-neutral-300"
-                        }`}
-                      >
-                        <Image src={url} alt="" fill sizes="160px" className="object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-8">
-                <div className="text-[9.5px] font-extrabold uppercase tracking-[0.2em]">TALLA</div>
-                <div className="mt-2.5 flex flex-wrap gap-1.5">
+              <div className="flex-none pt-2">
+                <div className="text-[9px] font-extrabold uppercase tracking-[0.2em]">TALLA</div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {sizes.map((s) => {
                     const on = s === picked;
                     return (
@@ -194,7 +209,7 @@ export function ProductSheetModal({
                         key={s}
                         type="button"
                         onClick={() => setSize(s)}
-                        className={`min-w-[48px] flex-1 border px-1 py-[11px] text-[11px] font-extrabold tracking-[0.1em] ${
+                        className={`min-w-[42px] flex-1 border px-1 py-2 text-[10px] font-extrabold tracking-[0.1em] lg:py-[11px] lg:text-[11px] ${
                           on ? "border-ink bg-ink text-neutral-100" : "border-neutral-400 bg-transparent text-ink"
                         }`}
                       >
@@ -209,25 +224,25 @@ export function ProductSheetModal({
                     href={`https://wa.me/${whatsapp}?text=${encodeURIComponent(waMessage)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="mt-4 flex items-center justify-between border-2 border-ink bg-ink px-[18px] py-4 text-[11px] font-extrabold uppercase tracking-[0.16em] text-cream"
+                    className="mt-2.5 flex items-center justify-between border-2 border-ink bg-ink px-4 py-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-cream lg:px-[18px] lg:py-4 lg:text-[11px]"
                   >
                     PEDIR POR WHATSAPP
-                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" strokeWidth="2">
                       <path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.7-5.5A8.4 8.4 0 1 1 21 11.5z" />
                     </svg>
                   </a>
                 )}
               </div>
 
-              <div className="mt-[18px] grid grid-cols-4 border-t border-ink/40">
+              <div className="mt-2 grid flex-none grid-cols-4 border-t border-ink/40">
                 {PERKS.map((perk, i) => (
-                  <div key={perk.l1} className={`px-1.5 pb-[18px] pt-[15px] text-center ${i < 3 ? "border-r border-ink/40" : ""}`}>
+                  <div key={perk.l1} className={`px-1 pb-2 pt-2 text-center lg:pb-[18px] lg:pt-[15px] ${i < 3 ? "border-r border-ink/40" : ""}`}>
                     <div className="flex justify-center">
-                      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" className="lg:h-[19px] lg:w-[19px]">
                         <path d={perk.d} />
                       </svg>
                     </div>
-                    <div className="mt-2 text-[8px] font-extrabold uppercase leading-[1.45] tracking-[0.1em] text-neutral-700">
+                    <div className="mt-1 text-[6.5px] font-extrabold uppercase leading-[1.35] tracking-[0.08em] text-neutral-700 lg:mt-2 lg:text-[8px] lg:leading-[1.45] lg:tracking-[0.1em]">
                       {perk.l1}
                       <br />
                       {perk.l2}
