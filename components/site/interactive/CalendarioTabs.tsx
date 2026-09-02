@@ -92,8 +92,6 @@ function buildGoalEntries(m: DerivedMatch, roster: DerivedPlayer[]): GoalMapEntr
         assistX: g.assistX,
         assistY: g.assistY,
         assistDorsal: assistPlayer?.dorsal ?? null,
-        curveX: g.curveX,
-        curveY: g.curveY,
         playMarkers: g.playMarkers,
       };
     });

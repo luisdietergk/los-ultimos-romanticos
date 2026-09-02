@@ -40,8 +40,6 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     assistPlayerId: g.assistPlayerId,
     assistX: g.assistX,
     assistY: g.assistY,
-    curveX: g.curveX,
-    curveY: g.curveY,
     playMarkers: (g.playMarkers as unknown as PlayMarker[]) ?? [],
   }));
 

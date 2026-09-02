@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 
 const NAV_ITEMS = [
@@ -12,12 +12,48 @@ const NAV_ITEMS = [
   { n: "06", label: "Uniformes", href: "#uniformes" },
 ];
 
+// Header hides once the visitor scrolls down past a small threshold, and
+// reappears as soon as they scroll back up (or return near the top) — a
+// scroll-direction comparison against the last known position, throttled to
+// one check per animation frame so it doesn't run on every scroll event.
+const HIDE_AFTER_PX = 80;
+
 export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
   const [open, setOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const lastY = useRef(0);
+  const ticking = useRef(false);
+
+  useEffect(() => {
+    lastY.current = window.scrollY;
+
+    function onScroll() {
+      if (ticking.current) return;
+      ticking.current = true;
+      requestAnimationFrame(() => {
+        const y = window.scrollY;
+        if (y <= HIDE_AFTER_PX) {
+          setHidden(false);
+        } else if (y > lastY.current) {
+          setHidden(true);
+        } else if (y < lastY.current) {
+          setHidden(false);
+        }
+        lastY.current = y;
+        ticking.current = false;
+      });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <>
-      <header className="fixed inset-x-0 top-0 z-40 flex items-center gap-3 bg-transparent px-4 py-2.5 text-ink lg:px-8">
+    <div
+      className="fixed inset-x-0 top-0 z-40 transition-transform duration-300 ease-out"
+      style={{ transform: hidden && !open ? "translateY(-100%)" : "translateY(0)" }}
+    >
+      <header className="flex items-center gap-3 bg-transparent px-4 py-2.5 text-ink lg:px-8">
         <div className="h-[41px] w-[34px] flex-none">
           {crestUrl && <Image src={crestUrl} alt="Escudo" width={68} height={82} className="h-full w-full object-contain" />}
         </div>
@@ -42,10 +78,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
         </button>
       </header>
 
-      <nav
-        className="fixed inset-x-0 top-[64px] z-40 overflow-hidden bg-cream transition-[max-height] duration-300 ease-out"
-        style={{ maxHeight: open ? 480 : 0 }}
-      >
+      <nav className="overflow-hidden bg-cream transition-[max-height] duration-300 ease-out" style={{ maxHeight: open ? 480 : 0 }}>
         {NAV_ITEMS.map((item) => (
           <a
             key={item.href}
@@ -58,6 +91,6 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
           </a>
         ))}
       </nav>
-    </>
+    </div>
   );
 }

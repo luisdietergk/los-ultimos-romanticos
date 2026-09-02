@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { pitchPoint, goalMouthPoint, quadraticPath, shotCurveControl, shotLineEnd, type PlayMarker } from "@/lib/derived";
+import { pitchPoint, goalMouthPoint, shotLineEnd, type PlayMarker } from "@/lib/derived";
 import { addGoal, updateGoal } from "@/lib/actions/matches";
 
 function clamp01(v: number): number {
@@ -29,8 +29,6 @@ export interface GoalFormInitial {
   assistPlayerId: string | null;
   assistX: number | null;
   assistY: number | null;
-  curveX: number | null;
-  curveY: number | null;
   playMarkers: PlayMarker[];
 }
 
@@ -65,8 +63,6 @@ export function GoalForm({
   const [assistPlayerId, setAssistPlayerId] = useState<string>(initial?.assistPlayerId ?? "");
   const [assistX, setAssistX] = useState<number | null>(initial?.assistX ?? null);
   const [assistY, setAssistY] = useState<number | null>(initial?.assistY ?? null);
-  const [curveX, setCurveX] = useState<number | null>(initial?.curveX ?? null);
-  const [curveY, setCurveY] = useState<number | null>(initial?.curveY ?? null);
   const [markers, setMarkers] = useState<PlayMarker[]>(initial?.playMarkers ?? []);
   const [pitchMode, setPitchMode] = useState<PitchMode>("shot");
 
@@ -95,34 +91,6 @@ export function GoalForm({
     }
   }
 
-  // The curve handle drags on its own, separately from handlePitchClick's
-  // "current mode places one dot" flow — it always starts wherever the
-  // curve control point currently sits (the straight line's own midpoint,
-  // until dragged elsewhere), and captures the pointer immediately since
-  // there's no tap-vs-drag ambiguity to resolve for a dedicated handle.
-  function onCurveHandlePointerDown(e: React.PointerEvent<SVGCircleElement>) {
-    e.stopPropagation();
-    const svg = pitchRef.current;
-    if (!svg) return;
-    const pointerId = e.pointerId;
-    const target = e.currentTarget;
-    target.setPointerCapture(pointerId);
-
-    const onMove = (ev: PointerEvent) => {
-      const rect = svg.getBoundingClientRect();
-      const px = (ev.clientX - rect.left) * (300 / rect.width);
-      const py = (ev.clientY - rect.top) * (200 / rect.height);
-      setCurveX(clamp01((px - 8) / 284));
-      setCurveY(clamp01((py - 8) / 184));
-    };
-    const onUp = () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-  }
-
   function handleGoalClick(e: React.MouseEvent<SVGSVGElement>) {
     const svg = goalRef.current;
     if (!svg) return;
@@ -143,8 +111,6 @@ export function GoalForm({
   // the line the admin drags here matches what actually publishes.
   const lineX2 = team === "LUR" ? 294 : 6;
   const lineY2 = shotLineEnd(goalX, team === "LUR");
-  const curveControl = shotDot ? shotCurveControl(curveX, curveY, shotDot, { x: lineX2, y: lineY2 }) : null;
-  const curveIsCustom = curveX != null && curveY != null;
 
   const action = isEdit ? updateGoal : addGoal;
 
@@ -274,12 +240,6 @@ export function GoalForm({
         <div className="mb-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-neutral-600">
           <span>Mapa de la jugada (clic)</span>
         </div>
-        {shotDot && (
-          <p className="mb-1.5 text-[10px] text-neutral-600">
-            Arrastra el punto sobre la línea del tiro para curvarla.
-          </p>
-        )}
-
         <div className="mb-1.5 flex flex-wrap gap-1.5">
           {(
             [
@@ -337,47 +297,16 @@ export function GoalForm({
           <rect x="274" y="76" width="18" height="48" fill="none" stroke="var(--color-neutral-500)" strokeWidth="1.5" />
           <rect x="292" y="76" width="4" height="48" fill="var(--color-ink)" />
           <rect x="4" y="76" width="4" height="48" fill="var(--color-ink)" />
-          {shotDot && curveControl && (
-            <>
-              <path
-                d={quadraticPath(shotDot, curveControl, { x: lineX2, y: lineY2 })}
-                fill="none"
-                stroke="var(--color-accent)"
-                strokeWidth="1.6"
-                strokeDasharray="4 3"
-              />
-              <line
-                x1={shotDot.x}
-                y1={shotDot.y}
-                x2={curveControl.x}
-                y2={curveControl.y}
-                stroke="var(--color-accent)"
-                strokeWidth="0.75"
-                strokeDasharray="2 2"
-                opacity="0.5"
-              />
-              <line
-                x1={curveControl.x}
-                y1={curveControl.y}
-                x2={lineX2}
-                y2={lineY2}
-                stroke="var(--color-accent)"
-                strokeWidth="0.75"
-                strokeDasharray="2 2"
-                opacity="0.5"
-              />
-              <circle
-                cx={curveControl.x}
-                cy={curveControl.y}
-                r="6"
-                fill={curveIsCustom ? "var(--color-accent)" : "var(--color-cream)"}
-                stroke="var(--color-accent)"
-                strokeWidth="2"
-                className="cursor-grab"
-                onPointerDown={onCurveHandlePointerDown}
-                onClick={(e) => e.stopPropagation()}
-              />
-            </>
+          {shotDot && (
+            <line
+              x1={shotDot.x}
+              y1={shotDot.y}
+              x2={lineX2}
+              y2={lineY2}
+              stroke="var(--color-accent)"
+              strokeWidth="1.6"
+              strokeDasharray="4 3"
+            />
           )}
           {markers.map((m, i) => {
             const pt = pitchPoint(m.x, m.y);
@@ -419,8 +348,6 @@ export function GoalForm({
         <input type="hidden" name="assistPlayerId" value={assistPlayerId} readOnly />
         <input type="hidden" name="assistX" value={assistX ?? ""} readOnly />
         <input type="hidden" name="assistY" value={assistY ?? ""} readOnly />
-        <input type="hidden" name="curveX" value={curveX ?? ""} readOnly />
-        <input type="hidden" name="curveY" value={curveY ?? ""} readOnly />
         <input type="hidden" name="playMarkers" value={JSON.stringify(markers)} readOnly />
 
         <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
@@ -447,18 +374,6 @@ export function GoalForm({
               className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
             >
               Borrar asistente
-            </button>
-          )}
-          {curveIsCustom && (
-            <button
-              type="button"
-              onClick={() => {
-                setCurveX(null);
-                setCurveY(null);
-              }}
-              className="text-[10px] font-bold uppercase tracking-wider text-neutral-600 hover:text-accent"
-            >
-              Enderezar línea de tiro
             </button>
           )}
           {markers.map((m, i) => (
