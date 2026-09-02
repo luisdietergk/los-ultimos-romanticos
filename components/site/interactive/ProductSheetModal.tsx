@@ -115,7 +115,7 @@ export function ProductSheetModal({
                   )}
                 </div>
 
-                <div className="absolute left-0 top-4 z-[5] w-[44%] p-3 lg:top-8 lg:w-[36%] lg:p-6">
+                <div className="absolute -left-4 top-4 z-[5] w-[44%] py-3 pl-0 pr-3 lg:-left-16 lg:top-8 lg:w-[36%] lg:py-6 lg:pr-6">
                   <div className="text-[clamp(9px,1.8vw,13px)] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
