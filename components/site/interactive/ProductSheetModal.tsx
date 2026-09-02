@@ -90,10 +90,11 @@ export function ProductSheetModal({
               </Dialog.Close>
 
               <div className="relative">
-                {/* The text panel now overlaps the photo (a cream/90 backdrop
-                    keeps it readable, same trick Hero.tsx uses) instead of
-                    sharing a column with it — that's what let the photo grow
-                    this much: it isn't fighting the text for width anymore. */}
+                {/* The text panel overlaps the photo (no backdrop — transparent
+                    over it) instead of sharing a column with it, which is
+                    what lets the photo be this big: it isn't fighting the
+                    text for width. The photo itself leans right within its
+                    box (object-right) to leave the overlaid text less busy. */}
                 <div
                   className="relative aspect-[3/4] w-full"
                   // Only the main photo (index 0) is the same element the
@@ -109,12 +110,12 @@ export function ProductSheetModal({
                       alt={product.name}
                       fill
                       sizes="480px"
-                      className="object-contain"
+                      className="object-contain object-right"
                     />
                   )}
                 </div>
 
-                <div className="absolute left-0 top-4 z-[5] w-[58%] bg-cream/90 p-3 lg:top-8 lg:w-[46%] lg:p-6">
+                <div className="absolute left-0 top-4 z-[5] w-[58%] p-3 lg:top-8 lg:w-[46%] lg:p-6">
                   <div className="text-[clamp(9px,1.8vw,13px)] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
