@@ -17,7 +17,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-40 flex items-center gap-3 border-b-2 border-ink bg-transparent px-4 py-2.5 text-ink lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center gap-3 bg-transparent px-4 py-2.5 text-ink lg:px-8">
         <div className="h-[41px] w-[34px] flex-none">
           {crestUrl && <Image src={crestUrl} alt="Escudo" width={68} height={82} className="h-full w-full object-contain" />}
         </div>
