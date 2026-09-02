@@ -299,11 +299,26 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
         />
         {!hasSwiped && (
           <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex flex-col items-center gap-1">
-            <div className="flex items-center gap-2 border border-ink/10 bg-cream/85 px-3 py-1.5">
-              <span className="inline-block animate-[lur-swipe-hint_1.4s_ease-in-out_infinite] text-[22px] leading-none">
-                👉
-              </span>
-              <span className="text-[9.5px] font-extrabold uppercase tracking-[0.2em]">ARRASTRA PARA EXPLORAR</span>
+            <div className="flex flex-col items-center gap-1 border border-ink/10 bg-cream/85 px-4 py-2.5">
+              <svg
+                width="30"
+                height="34"
+                viewBox="0 0 24 28"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-ink"
+              >
+                <path d="M3 6h18M3 6l3.5-3.5M3 6l3.5 3.5M21 6l-3.5-3.5M21 6l-3.5 3.5" />
+                <g className="animate-[lur-swipe-hint_1.4s_ease-in-out_infinite]">
+                  <rect x="9" y="20" width="8" height="7" rx="3.5" />
+                  <rect x="10.5" y="10" width="3" height="12" rx="1.5" />
+                </g>
+              </svg>
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-ink">ARRASTRA</span>
+              <span className="-mt-0.5 text-[8.5px] font-bold uppercase tracking-[0.2em] text-neutral-500">PARA EXPLORAR</span>
             </div>
           </div>
         )}
