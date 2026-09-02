@@ -17,14 +17,9 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex items-center gap-3 border-b-2 border-ink bg-transparent px-4 py-2.5 text-ink lg:px-8">
+      <header className="fixed inset-x-0 top-0 z-40 flex items-center gap-3 border-b-2 border-ink bg-transparent px-4 py-2.5 text-ink lg:px-8">
         <div className="h-[41px] w-[34px] flex-none">
           {crestUrl && <Image src={crestUrl} alt="Escudo" width={68} height={82} className="h-full w-full object-contain" />}
-        </div>
-        <div className="text-[13px] font-black uppercase leading-[1.05] tracking-wide">
-          LOS ÚLTIMOS
-          <br />
-          ROMÁNTICOS
         </div>
         <button
           type="button"
@@ -48,7 +43,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
       </header>
 
       <nav
-        className="relative z-40 overflow-hidden bg-cream transition-[max-height] duration-300 ease-out"
+        className="fixed inset-x-0 top-[64px] z-40 overflow-hidden bg-cream transition-[max-height] duration-300 ease-out"
         style={{ maxHeight: open ? 480 : 0 }}
       >
         {NAV_ITEMS.map((item) => (
