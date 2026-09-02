@@ -26,21 +26,21 @@ export function Countdown({ targetISO }: { targetISO: string }) {
   }, [target]);
 
   return (
-    <div className="mt-[26px] px-5 pb-[30px] text-center">
+    <div className="mt-[36px] px-5 pb-[30px] text-center">
       <div className="text-[9.5px] font-bold tracking-[0.24em] text-neutral-600">FALTAN</div>
       <div className="mt-3.5 flex items-start justify-center gap-2.5">
         <div>
-          <div className="font-serif text-[44px] leading-none tabular-nums text-accent">{cd.d}</div>
+          <div className="font-dynamic text-[50px] leading-none tracking-[0.02em] tabular-nums text-accent">{cd.d}</div>
           <div className="mt-2 text-[9px] font-bold tracking-[0.16em] text-neutral-600">DÍAS</div>
         </div>
         <div className="text-[36px] font-black leading-[1.1] text-accent/40">:</div>
         <div>
-          <div className="font-serif text-[44px] leading-none tabular-nums text-accent">{cd.h}</div>
+          <div className="font-dynamic text-[50px] leading-none tracking-[0.02em] tabular-nums text-accent">{cd.h}</div>
           <div className="mt-2 text-[9px] font-bold tracking-[0.16em] text-neutral-600">HORAS</div>
         </div>
         <div className="text-[36px] font-black leading-[1.1] text-accent/40">:</div>
         <div>
-          <div className="font-serif text-[44px] leading-none tabular-nums text-accent">{cd.m}</div>
+          <div className="font-dynamic text-[50px] leading-none tracking-[0.02em] tabular-nums text-accent">{cd.m}</div>
           <div className="mt-2 text-[9px] font-bold tracking-[0.16em] text-neutral-600">MIN</div>
         </div>
       </div>

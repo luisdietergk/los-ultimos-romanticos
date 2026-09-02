@@ -102,6 +102,42 @@ export default async function SettingsPage() {
           />
         </div>
 
+        <div className="border-t border-ink/20 pt-4">
+          <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-neutral-600">Redes sociales (pie de página)</h2>
+          <div className="flex flex-col gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider">TikTok (URL)</label>
+              <input
+                name="tiktokUrl"
+                type="url"
+                placeholder="https://www.tiktok.com/@tuequipo"
+                defaultValue={settings?.tiktokUrl ?? ""}
+                className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Instagram (URL)</label>
+              <input
+                name="instagramUrl"
+                type="url"
+                placeholder="https://www.instagram.com/tuequipo"
+                defaultValue={settings?.instagramUrl ?? ""}
+                className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Gmail (correo)</label>
+              <input
+                name="gmailAddress"
+                type="email"
+                placeholder="tuequipo@gmail.com"
+                defaultValue={settings?.gmailAddress ?? ""}
+                className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
+              />
+            </div>
+          </div>
+        </div>
+
         <div>
           <button type="submit" className="bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-cream hover:bg-accent-hover">
             Guardar cambios
@@ -112,17 +148,13 @@ export default async function SettingsPage() {
       <div className="mt-10 max-w-2xl border-2 border-ink p-4">
         <h2 className="text-xs font-bold uppercase tracking-wider text-neutral-600">Variables de entorno (solo lectura)</h2>
         <p className="mt-1 text-xs text-neutral-600">
-          Estos valores vienen de variables de entorno, no de la base de datos — cambiarlos requiere editar el
+          Este valor viene de una variable de entorno, no de la base de datos — cambiarlo requiere editar el
           entorno y volver a desplegar el sitio.
         </p>
-        <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+        <dl className="mt-3 text-sm">
           <div>
             <dt className="text-xs font-bold uppercase tracking-wider">WhatsApp</dt>
             <dd className="mt-1">{process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "—"}</dd>
-          </div>
-          <div>
-            <dt className="text-xs font-bold uppercase tracking-wider">Instagram</dt>
-            <dd className="mt-1 break-all">{process.env.NEXT_PUBLIC_INSTAGRAM_URL || "—"}</dd>
           </div>
         </dl>
       </div>

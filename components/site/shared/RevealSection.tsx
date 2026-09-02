@@ -45,7 +45,7 @@ export function RevealSection({
       ref={ref as never}
       id={id}
       style={style}
-      className={`${className ?? ""} transition-all duration-700 ease-out ${
+      className={`${className ?? ""} scroll-mt-16 transition-all duration-700 ease-out ${
         visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
       }`}
     >

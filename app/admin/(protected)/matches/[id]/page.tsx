@@ -31,6 +31,7 @@ export default async function MatchDetailPage({ params }: { params: Promise<{ id
     playerId: g.playerId,
     scorerName: g.scorerName,
     note: g.note,
+    videoUrl: g.videoUrl,
     shotX: g.shotX,
     shotY: g.shotY,
     goalX: g.goalX,

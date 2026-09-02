@@ -8,6 +8,12 @@ import { PlayerProfileModal } from "./PlayerProfileModal";
 
 const SPEED_PX_PER_MS = 0.034; // ~ the prototype's 0.34px/frame at 60fps
 const RESUME_DELAY_MS = 4500;
+// Must match PlayerCard's `w-[236px]` below — Tailwind's arbitrary-value
+// classes can't be built from a JS constant, so the width is duplicated
+// here purely for the centering/momentum math.
+const CARD_WIDTH = 236;
+const MOMENTUM_FRICTION = 0.94; // velocity multiplier per ~16.7ms frame
+const MOMENTUM_MIN_VX = 0.02; // px/ms — below this, hand back to auto-scroll
 
 /** The `#plantilla` squad row: a continuously auto-scrolling card marquee
  * (roster rendered twice back-to-back, translated by hand with
@@ -17,13 +23,16 @@ const RESUME_DELAY_MS = 4500;
  * instead of native `scrollLeft`), a "ver plantilla completa" toggle to a
  * static full-roster list, and the tap-to-open player profile modal. */
 export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGoals: DerivedGoal[] }) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const offsetRef = useRef(0);
   const pausedRef = useRef(false);
   const draggedRef = useRef(false);
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const momentumRafRef = useRef<number | undefined>(undefined);
   const [selected, setSelected] = useState<FullPlayer | null>(null);
   const [showFull, setShowFull] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
 
   const pause = useCallback(() => {
     pausedRef.current = true;
@@ -33,6 +42,31 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
     }, RESUME_DELAY_MS);
   }, []);
 
+  // Tap-to-center: the tapped card glides to the middle of the row and gets
+  // its 15%-bigger highlight treatment (see PlayerCard) instead of jumping
+  // straight to the profile modal — "Ver perfil" (or tapping it again) is
+  // what actually opens the modal now.
+  const centerOn = useCallback((i: number) => {
+    const container = containerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+    const half = track.scrollWidth / 2;
+    if (half <= 0) return;
+    if (momentumRafRef.current) cancelAnimationFrame(momentumRafRef.current);
+    const cardCenter = i * CARD_WIDTH + CARD_WIDTH / 2;
+    let target = cardCenter - container.clientWidth / 2;
+    target = ((target % half) + half) % half;
+    pausedRef.current = true;
+    if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+    offsetRef.current = target;
+    track.style.transition = "transform 0.45s cubic-bezier(0.22,1,0.36,1)";
+    track.style.transform = `translateX(${-target}px)`;
+    window.setTimeout(() => {
+      if (trackRef.current) trackRef.current.style.transition = "";
+    }, 460);
+    setHighlightedIndex(i);
+  }, []);
+
   useEffect(() => {
     if (roster.length === 0) return;
     let raf = 0;
@@ -40,7 +74,7 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
     const step = (t: number) => {
       raf = requestAnimationFrame(step);
       const track = trackRef.current;
-      if (!track || pausedRef.current || showFull) {
+      if (!track || pausedRef.current || showFull || highlightedIndex != null) {
         last = t;
         return;
       }
@@ -54,11 +88,12 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [roster.length, showFull]);
+  }, [roster.length, showFull, highlightedIndex]);
 
   useEffect(
     () => () => {
       if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+      if (momentumRafRef.current) cancelAnimationFrame(momentumRafRef.current);
     },
     []
   );
@@ -75,16 +110,22 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
     if (!track) return;
     const half = track.scrollWidth / 2;
     if (half <= 0) return;
+    if (momentumRafRef.current) cancelAnimationFrame(momentumRafRef.current);
+    track.style.transition = "";
     pause();
     const pointerId = e.pointerId;
     let captured = false;
     const startX = e.clientX;
     const startOffset = offsetRef.current;
+    let lastMoveX = e.clientX;
+    let lastMoveT = performance.now();
+    let velocity = 0; // px/ms, smoothed
 
     const onMove = (ev: PointerEvent) => {
       const dx = ev.clientX - startX;
       if (!captured && Math.abs(dx) > 5) {
         draggedRef.current = true;
+        setHighlightedIndex(null);
         container.setPointerCapture(pointerId);
         captured = true;
       }
@@ -93,6 +134,15 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
       next = ((next % half) + half) % half;
       offsetRef.current = next;
       track.style.transform = `translateX(${-next}px)`;
+
+      const now = performance.now();
+      const dt = now - lastMoveT;
+      if (dt > 0) {
+        const instant = (ev.clientX - lastMoveX) / dt;
+        velocity = velocity * 0.7 + instant * 0.3;
+      }
+      lastMoveX = ev.clientX;
+      lastMoveT = now;
     };
     const onUp = () => {
       window.removeEventListener("pointermove", onMove);
@@ -103,6 +153,37 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
         setTimeout(() => {
           draggedRef.current = false;
         }, 80);
+
+        // Keep gliding in the swipe's direction instead of stopping dead the
+        // instant the finger lifts — velocity decays each frame until it's
+        // negligible, then normal auto-scroll takes back over via pause().
+        let vx = velocity;
+        if (Math.abs(vx) > MOMENTUM_MIN_VX) {
+          // Hold the pause without its auto-resume timer for the whole
+          // glide — otherwise the timer from pause() at drag-start could
+          // fire mid-glide and let the constant-speed auto-scroll loop
+          // fight this one over the same transform.
+          if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current);
+          pausedRef.current = true;
+          let lastT = performance.now();
+          const glide = (t: number) => {
+            const dt = Math.min(50, t - lastT);
+            lastT = t;
+            vx *= Math.pow(MOMENTUM_FRICTION, dt / 16.7);
+            offsetRef.current -= vx * dt;
+            offsetRef.current = ((offsetRef.current % half) + half) % half;
+            if (track) track.style.transform = `translateX(${-offsetRef.current}px)`;
+            if (Math.abs(vx) > MOMENTUM_MIN_VX) {
+              momentumRafRef.current = requestAnimationFrame(glide);
+            } else {
+              momentumRafRef.current = undefined;
+              pause();
+            }
+          };
+          momentumRafRef.current = requestAnimationFrame(glide);
+        } else {
+          pause();
+        }
       }
     };
     window.addEventListener("pointermove", onMove);
@@ -117,6 +198,7 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
   return (
     <>
       <div
+        ref={containerRef}
         className="mt-1 touch-pan-y select-none overflow-hidden py-[30px] cursor-grab"
         onPointerDown={onPointerDown}
       >
@@ -126,9 +208,16 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
               key={`${p.id}-${i}`}
               player={p}
               allGoals={allGoals}
-              onOpen={() => {
-                if (!draggedRef.current) setSelected(p);
+              highlighted={highlightedIndex === i}
+              onTap={() => {
+                if (draggedRef.current) return;
+                if (highlightedIndex === i) {
+                  setSelected(p);
+                } else {
+                  centerOn(i);
+                }
               }}
+              onViewProfile={() => setSelected(p)}
             />
           ))}
         </div>
@@ -169,7 +258,15 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
         )}
       </div>
 
-      <PlayerProfileModal player={selected} allGoals={allGoals} onClose={() => setSelected(null)} />
+      <PlayerProfileModal
+        player={selected}
+        allGoals={allGoals}
+        onClose={() => {
+          setSelected(null);
+          setHighlightedIndex(null);
+          pausedRef.current = false;
+        }}
+      />
     </>
   );
 }
@@ -177,19 +274,32 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
 function PlayerCard({
   player,
   allGoals,
-  onOpen,
+  highlighted,
+  onTap,
+  onViewProfile,
 }: {
   player: FullPlayer;
   allGoals: DerivedGoal[];
-  onOpen: () => void;
+  highlighted: boolean;
+  onTap: () => void;
+  onViewProfile: () => void;
 }) {
   const goals = playerGoalCount(player.id, allGoals);
 
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="relative w-[236px] flex-none border-l border-ink/15 px-4 pb-1 pt-3.5 text-left"
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onTap}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onTap();
+        }
+      }}
+      className={`relative w-[236px] flex-none cursor-pointer border-l border-ink/15 px-4 pb-1 pt-3.5 text-left transition-transform duration-300 ease-out ${
+        highlighted ? "z-10 scale-[1.15]" : "z-0"
+      }`}
     >
       <div className="relative h-[232px] overflow-hidden">
         <div className="pointer-events-none absolute -left-1 top-0.5 z-0 font-serif text-[74px] leading-[0.8] tracking-tight text-neutral-400 opacity-50 tabular-nums">
@@ -224,6 +334,19 @@ function PlayerCard({
         <span>{goals} G</span>
         <span>{player.assists} A</span>
       </div>
-    </button>
+
+      {highlighted && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onViewProfile();
+          }}
+          className="mt-3 flex w-full items-center justify-center gap-2 bg-accent px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-[0.16em] text-cream hover:bg-accent-hover"
+        >
+          VER PERFIL
+        </button>
+      )}
+    </div>
   );
 }

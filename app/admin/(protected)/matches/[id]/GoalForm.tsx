@@ -21,6 +21,7 @@ export interface GoalFormInitial {
   playerId: string | null;
   scorerName: string;
   note: string | null;
+  videoUrl: string | null;
   shotX: number | null;
   shotY: number | null;
   goalX: number | null;
@@ -167,6 +168,20 @@ export function GoalForm({
             defaultValue={initial?.note ?? ""}
             className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
           />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Video del gol (URL, opcional)</label>
+          <input
+            name="videoUrl"
+            type="url"
+            placeholder="https://..."
+            defaultValue={initial?.videoUrl ?? ""}
+            className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
+          />
+          <p className="mt-1 text-[11px] text-neutral-600">
+            Pega el enlace de un video (YouTube, Vercel Blob, etc.). Aparecerá como botón &quot;Ver gol&quot; en el mapa de tiro.
+          </p>
         </div>
 
         <div>

@@ -31,11 +31,19 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
           onClick={() => setOpen((v) => !v)}
           aria-label="Menú"
           aria-expanded={open}
-          className="ml-auto flex w-6 flex-col gap-[5px] border-0 bg-none p-0"
+          className="relative ml-auto flex h-6 w-6 flex-none flex-col items-center justify-center gap-[5px] border-0 bg-none p-0"
         >
-          <span className="block h-0.5 bg-cream" />
-          <span className="block h-0.5 bg-cream" />
-          <span className="block h-0.5 bg-cream" />
+          <span
+            className={`block h-0.5 w-6 bg-cream transition-transform duration-200 ${
+              open ? "absolute rotate-45" : ""
+            }`}
+          />
+          <span className={`block h-0.5 w-6 bg-cream transition-opacity duration-150 ${open ? "opacity-0" : ""}`} />
+          <span
+            className={`block h-0.5 w-6 bg-cream transition-transform duration-200 ${
+              open ? "absolute -rotate-45" : ""
+            }`}
+          />
         </button>
       </header>
 

@@ -81,6 +81,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [hasSwiped, setHasSwiped] = useState(false);
   // Which single product's rack photo is allowed to carry a
   // view-transition-name right now. Only ever one product at a time (or
   // none) — every other item's name must stay undefined, always, even
@@ -242,6 +243,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
         if (!captured) {
           stage.setPointerCapture(pointerId);
           captured = true;
+          setHasSwiped(true);
         }
       }
       const now = performance.now();
@@ -295,6 +297,17 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
             boxShadow: "inset 0 1px 0 rgba(255,255,255,.15), 0 6px 10px rgba(0,0,0,.35)",
           }}
         />
+        {!hasSwiped && (
+          <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex flex-col items-center gap-1">
+            <div className="flex items-center gap-2 border border-ink/10 bg-cream/85 px-3 py-1.5">
+              <span className="inline-block animate-[lur-swipe-hint_1.4s_ease-in-out_infinite] text-[22px] leading-none">
+                👉
+              </span>
+              <span className="text-[9.5px] font-extrabold uppercase tracking-[0.2em]">ARRASTRA PARA EXPLORAR</span>
+            </div>
+          </div>
+        )}
+
         {products.map((p, i) => (
           <div
             key={p.id}
@@ -341,16 +354,6 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="flex items-center justify-center gap-3.5 px-6 pt-1.5">
-        <svg width="30" height="10" viewBox="0 0 30 10" fill="none" stroke="currentColor" strokeWidth="1.6">
-          <path d="M29 5H1M6 1 1 5l5 4" />
-        </svg>
-        <span className="text-[9.5px] font-extrabold uppercase tracking-[0.2em]">ARRASTRA PARA EXPLORAR</span>
-        <svg width="30" height="10" viewBox="0 0 30 10" fill="none" stroke="currentColor" strokeWidth="1.6">
-          <path d="M1 5h28M24 1l5 4-5 4" />
-        </svg>
       </div>
 
       <div className="mt-3.5 flex items-center justify-center gap-1.5">

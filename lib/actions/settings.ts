@@ -4,10 +4,10 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireString, intOrDefault, nullableString } from "./util";
 
-/** Edits the SiteSettings singleton (id=1). NEXT_PUBLIC_WHATSAPP_NUMBER and
- * NEXT_PUBLIC_INSTAGRAM_URL are environment variables, not DB columns, so
- * they aren't touched here — the settings page only displays their current
- * value read-only. */
+/** Edits the SiteSettings singleton (id=1). NEXT_PUBLIC_WHATSAPP_NUMBER is
+ * still an environment variable, not a DB column — the settings page only
+ * displays its current value read-only. TikTok/Instagram/Gmail links, by
+ * contrast, are real editable fields here (the footer icons read them). */
 export async function updateSettings(formData: FormData): Promise<void> {
   const taglineHtml = requireString(formData, "taglineHtml");
   const historiaP1 = requireString(formData, "historiaP1");
@@ -18,6 +18,9 @@ export async function updateSettings(formData: FormData): Promise<void> {
   const heroVideoUrl = nullableString(formData, "heroVideoUrl");
   const patternUrl = nullableString(formData, "patternUrl");
   const teamCrestUrl = nullableString(formData, "teamCrestUrl");
+  const tiktokUrl = nullableString(formData, "tiktokUrl");
+  const instagramUrl = nullableString(formData, "instagramUrl");
+  const gmailAddress = nullableString(formData, "gmailAddress");
 
   await prisma.siteSettings.upsert({
     where: { id: 1 },
@@ -31,6 +34,9 @@ export async function updateSettings(formData: FormData): Promise<void> {
       heroVideoUrl,
       patternUrl,
       teamCrestUrl,
+      tiktokUrl,
+      instagramUrl,
+      gmailAddress,
     },
     update: {
       taglineHtml,
@@ -41,6 +47,9 @@ export async function updateSettings(formData: FormData): Promise<void> {
       heroVideoUrl,
       patternUrl,
       teamCrestUrl,
+      tiktokUrl,
+      instagramUrl,
+      gmailAddress,
     },
   });
   redirect("/admin/settings");

@@ -49,6 +49,7 @@ async function resolveGoalFields(formData: FormData) {
   if (!VALID_TEAM.includes(team as GoalTeam)) throw new Error(`Equipo inválido: ${team}`);
 
   const note = nullableString(formData, "note");
+  const videoUrl = nullableString(formData, "videoUrl");
   const shotX = floatOrNull(formData, "shotX");
   const shotY = floatOrNull(formData, "shotY");
   const goalX = floatOrNull(formData, "goalX");
@@ -67,7 +68,7 @@ async function resolveGoalFields(formData: FormData) {
     scorerName = requireString(formData, "scorerName").trim();
   }
 
-  return { matchId, minute, team: team as GoalTeam, playerId, scorerName, note, shotX, shotY, goalX, goalY };
+  return { matchId, minute, team: team as GoalTeam, playerId, scorerName, note, videoUrl, shotX, shotY, goalX, goalY };
 }
 
 export async function addGoal(formData: FormData): Promise<void> {

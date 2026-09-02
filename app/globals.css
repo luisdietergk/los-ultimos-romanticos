@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Anchor links (Hero's CTAs, the header's section menu) scroll smoothly
+   instead of snapping straight to the target. */
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --color-cream: #edeae1;
   --color-ink: #201e1d;
@@ -42,6 +48,7 @@
 
   --font-serif: var(--font-display), Georgia, serif;
   --font-sans: var(--font-body), system-ui, sans-serif;
+  --font-dynamic: var(--font-countdown), system-ui, sans-serif;
 
   /* Zero border-radius everywhere — sharp, editorial look, at every breakpoint. */
   --radius-sm: 0px;
@@ -66,6 +73,14 @@ h1, h2, h3, h4 {
 }
 @keyframes lur-dash {
   to { stroke-dashoffset: 0; }
+}
+
+/* Shop rack's "swipe to explore" hint — a finger sliding back and forth,
+   fading at each end of the stroke — disappears the first time the visitor
+   actually drags the rack (see ShopRack.tsx's `hasSwiped`). */
+@keyframes lur-swipe-hint {
+  0%, 100% { transform: translateX(-12px); opacity: 0.5; }
+  50% { transform: translateX(12px); opacity: 1; }
 }
 
 @keyframes podios-open { from { height: 0 } to { height: var(--radix-collapsible-content-height) } }

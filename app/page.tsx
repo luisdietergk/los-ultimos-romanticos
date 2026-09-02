@@ -53,7 +53,12 @@ export default async function HomePage() {
       <Uniformes kits={kits} />
       <Tienda products={shop} />
       <ComingSoon />
-      <Footer crestUrl={settings.teamCrestUrl} />
+      <Footer
+        crestUrl={settings.teamCrestUrl}
+        tiktokUrl={settings.tiktokUrl}
+        instagramUrl={settings.instagramUrl}
+        gmailAddress={settings.gmailAddress}
+      />
     </div>
   );
 }

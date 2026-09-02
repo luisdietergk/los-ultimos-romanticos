@@ -14,6 +14,7 @@ export interface DerivedGoal {
   playerId: string | null;
   scorerName: string;
   note: string | null;
+  videoUrl: string | null;
   shotX: number | null;
   shotY: number | null;
   goalX: number | null;

@@ -69,7 +69,7 @@ export function Hero({ heroVideoUrl, taglineHtml }: { heroVideoUrl: string | nul
 
       <div className="relative z-10 lg:grid lg:grid-cols-[440px_1fr] lg:items-end lg:gap-12">
         <div className="lg:bg-cream/90 lg:p-6">
-          <h1 className="mt-[150px] font-serif text-[clamp(34px,10.6vw,49px)] uppercase leading-none tracking-[0.005em] text-ink lg:mt-0 lg:text-[64px]">
+          <h1 className="mt-[150px] font-sans text-[clamp(34px,10.6vw,49px)] font-black uppercase leading-none tracking-[-0.01em] text-ink lg:mt-0 lg:text-[64px]">
             LOS
             <br />
             ÚLTIMOS

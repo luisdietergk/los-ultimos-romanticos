@@ -13,6 +13,7 @@ export interface GoalMapEntry {
   typeLabel: string;
   situacion: string;
   photoUrl: string | null;
+  videoUrl: string | null;
   isLur: boolean;
   shotX: number | null;
   shotY: number | null;
@@ -44,6 +45,10 @@ export function GoalMapModal({
   const has = !!g && g.shotX != null && g.shotY != null;
   const shot = has ? pitchPoint(g!.shotX!, g!.shotY!) : null;
   const lineY2 = g ? shotLineEnd(g.goalY) : 0;
+  // A rival's goal is scored against LUR's own goal, so its shot line/entry
+  // targets the opposite end of the pitch from a LUR goal (which always
+  // shoots at the rival's goal on the right).
+  const lineX2 = g?.isLur === false ? 6 : 294;
   const hasGoalDot = !!g && g.goalX != null && g.goalY != null;
   const goalDot = hasGoalDot ? goalMouthPoint(g!.goalX!, g!.goalY!) : goalMouthPoint(0.5, 0.5);
 
@@ -89,15 +94,16 @@ export function GoalMapModal({
                   {has && (
                     <>
                       <line
+                        key={g!.key}
                         x1={shot!.x}
                         y1={shot!.y}
-                        x2={294}
+                        x2={lineX2}
                         y2={lineY2}
                         stroke="var(--color-accent)"
                         strokeWidth="1.6"
-                        strokeDasharray="5 4"
+                        strokeDasharray="0.045 0.035"
                         pathLength={1}
-                        style={{ strokeDashoffset: 0, animation: "lur-dash 0.6s ease-out" }}
+                        style={{ strokeDashoffset: 1, animation: "lur-dash 0.7s ease-out forwards" }}
                       />
                       <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
                       <circle cx={shot!.x} cy={shot!.y} r="3" fill="var(--color-ink)" />
@@ -105,6 +111,22 @@ export function GoalMapModal({
                   )}
                 </svg>
               </div>
+
+              {g.videoUrl && (
+                <div className="px-4 pt-2">
+                  <a
+                    href={g.videoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 border-2 border-ink bg-ink px-4 py-2.5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-cream"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-accent)">
+                      <path d="M8 5.5v13l11-6.5z" />
+                    </svg>
+                    VER GOL
+                  </a>
+                </div>
+              )}
 
               <div className="flex items-center justify-center gap-5 px-4 pb-0.5 pt-1.5">
                 <button

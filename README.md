@@ -10,7 +10,7 @@ Production rebuild of the "Los Últimos Románticos" Claude Design prototype —
    - `DATABASE_URL` — the Neon connection string from step 1.
    - `AUTH_SECRET` — any long random string (e.g. run `openssl rand -base64 32` somewhere, or just mash the keyboard for 40+ characters).
    - `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` — whatever you want the first admin login to be. Safe to leave set permanently — the seed script only creates this account once.
-   - `NEXT_PUBLIC_WHATSAPP_NUMBER` / `NEXT_PUBLIC_INSTAGRAM_URL` — optional; the footer/shop buttons stay hidden until these are set.
+   - `NEXT_PUBLIC_WHATSAPP_NUMBER` — optional; the footer/shop WhatsApp button stays hidden until it's set. (TikTok/Instagram/Gmail are edited from `/admin/settings` instead — not environment variables.)
 4. **Attach Vercel Blob storage**: in the same project, go to the **Storage** tab → **Create Database** → **Blob** → connect it to this project. Vercel injects `BLOB_READ_WRITE_TOKEN` automatically — nothing to copy by hand.
 5. **Deploy.** The build runs `prisma generate && prisma db push && tsx prisma/seed.ts && next build` automatically — it creates the tables and loads the real roster/schedule/shop content into your new database the first time, and is a safe no-op on every deploy after that.
 6. Visit the deployed URL, then `/admin` to log in with the email/password from step 3.

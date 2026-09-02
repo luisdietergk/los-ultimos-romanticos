@@ -36,6 +36,9 @@ model SiteSettings {
   historiaP2   String   @default("")
   ligaNombre   String   @default("LIGA ROMÁNTICA CDT")
   seasonYear   Int      @default(2026)
+  tiktokUrl    String?
+  instagramUrl String?
+  gmailAddress String?
   updatedAt    DateTime @updatedAt
 }
 
@@ -72,6 +75,7 @@ model Goal {
   player     Player?  @relation(fields: [playerId], references: [id])
   scorerName String
   note       String?
+  videoUrl   String?
   shotX      Float?
   shotY      Float?
   goalX      Float?
