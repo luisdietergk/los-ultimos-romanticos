@@ -84,12 +84,12 @@ export function ProductSheetModal({
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
         <Dialog.Content className="fixed inset-0 z-50 overflow-y-auto bg-cream" aria-describedby={undefined}>
           {product && (
-            <div className="mx-auto w-full max-w-[480px] px-6 pb-6 pt-4 lg:max-w-[960px] lg:px-16 lg:pb-10 lg:pt-8">
+            <div className="mx-auto w-full max-w-[480px] px-4 pb-6 pt-4 lg:max-w-[960px] lg:px-16 lg:pb-10 lg:pt-8">
               <Dialog.Close className="absolute right-4 top-4 z-10 flex h-9 w-9 flex-none items-center justify-center border-2 border-ink bg-cream text-2xl leading-none lg:right-8 lg:top-8">
                 ×
               </Dialog.Close>
 
-              <div className="flex items-start gap-4 pr-12 lg:gap-16 lg:pr-16">
+              <div className="flex items-start gap-3 pr-10 lg:gap-10 lg:pr-14">
                 {/* Measured off the reference (853x1844px capture): the text
                     block sits vertically centered next to the photo, which
                     starts flush at the top — it isn't top-aligned with the
@@ -97,7 +97,7 @@ export function ProductSheetModal({
                     the reference's own proportions (title ≈ 10% of the page
                     width, price ≈ 6.5%), clamped so they stay sane outside
                     the ~850px width it was shot at. */}
-                <div className="flex w-[38%] flex-none flex-col justify-center self-stretch">
+                <div className="flex w-[27%] flex-none flex-col justify-center self-stretch">
                   <div className="text-[clamp(9px,1.8vw,13px)] font-extrabold uppercase tracking-[0.2em] text-accent">
                     COLECCIÓN 20◆20
                   </div>
