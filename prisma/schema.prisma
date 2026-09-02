@@ -107,6 +107,7 @@ model ShopProduct {
   description      String
   photoUrl         String?
   detailImageUrls  String[] @default([])
+  zoomed           Boolean  @default(false)
   sortOrder        Int      @default(0)
 }
 

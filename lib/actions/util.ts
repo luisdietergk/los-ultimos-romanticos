@@ -45,3 +45,9 @@ export function floatOrNull(formData: FormData, field: string): number | null {
 export function clamp01(v: number): number {
   return Math.min(1, Math.max(0, v));
 }
+
+/** A checkbox only shows up in FormData at all when checked (browsers omit
+ * unchecked ones entirely) — so presence, not value, is what to check. */
+export function checkbox(formData: FormData, field: string): boolean {
+  return formData.get(field) != null;
+}

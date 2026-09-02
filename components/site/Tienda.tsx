@@ -9,6 +9,7 @@ export interface ShopProduct {
   description: string;
   photoUrl: string | null;
   detailImageUrls: string[];
+  zoomed: boolean;
   sortOrder: number;
 }
 

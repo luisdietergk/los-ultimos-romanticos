@@ -76,6 +76,10 @@ export default async function ShopPage() {
               <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Descripción</label>
               <textarea name="description" rows={2} required className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm" />
             </div>
+            <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider sm:col-span-2">
+              <input type="checkbox" name="zoomed" className="h-4 w-4" />
+              Zoom (para fotos que se ven muy chicas, como gorras)
+            </label>
             <DetailImageFields detailImageUrls={[]} />
             <div className="sm:col-span-2">
               <button type="submit" className="bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-cream hover:bg-accent-hover">
@@ -144,6 +148,10 @@ export default async function ShopPage() {
                   className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
                 />
               </div>
+              <label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider sm:col-span-2">
+                <input type="checkbox" name="zoomed" defaultChecked={p.zoomed} className="h-4 w-4" />
+                Zoom (para fotos que se ven muy chicas, como gorras)
+              </label>
               <DetailImageFields detailImageUrls={p.detailImageUrls} />
               <div className="sm:col-span-2">
                 <button type="submit" className="bg-accent px-4 py-2 text-xs font-bold uppercase tracking-wider text-cream hover:bg-accent-hover">

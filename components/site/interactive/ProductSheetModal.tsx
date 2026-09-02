@@ -96,7 +96,7 @@ export function ProductSheetModal({
                     text for width. The photo itself leans right within its
                     box (object-right) to leave the overlaid text less busy. */}
                 <div
-                  className="relative ml-auto aspect-[3/4] w-[80%]"
+                  className="relative ml-auto aspect-[3/4] w-[80%] overflow-hidden"
                   // Only the main photo (index 0) is the same element the
                   // rack thumbnail represents, so only it gets the shared
                   // name — see ShopRack.tsx's setOpenIdWithTransition. The
@@ -110,7 +110,7 @@ export function ProductSheetModal({
                       alt={product.name}
                       fill
                       sizes="480px"
-                      className="object-contain object-right"
+                      className={`object-contain object-right ${product.zoomed ? "scale-150" : ""}`}
                     />
                   )}
                 </div>
@@ -168,7 +168,13 @@ export function ProductSheetModal({
                         i === activeImage ? "border-ink" : "border-neutral-300"
                       }`}
                     >
-                      <Image src={url} alt="" fill sizes="100px" className="object-cover" />
+                      <Image
+                        src={url}
+                        alt=""
+                        fill
+                        sizes="100px"
+                        className={`object-cover ${product.zoomed ? "scale-125" : ""}`}
+                      />
                     </button>
                   ))}
                 </div>
