@@ -1,9 +1,12 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import type { ShopProduct } from "../Tienda";
+
+const CLOSE_DRAG_THRESHOLD_PX = 90;
+const CLOSE_ANIM_MS = 220;
 
 // Perk icon paths + copy ported verbatim from the prototype's `spPerks`
 // (Los Ultimos Romanticos.dc.html:2170-2179), minus "Diseños Exclusivos" —
@@ -70,24 +73,94 @@ export function ProductSheetModal({
   const whatsapp = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER;
   const waMessage = product ? `Hola! Me interesa: ${product.name}` : "";
 
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Same slide-up/rounded-corner/grabber-bar/drag-to-dismiss treatment as
+  // GoalMapModal.tsx and PlayerProfileModal.tsx. This sheet's content really
+  // can scroll (photo + gallery + sizes + perks), so — like the player
+  // profile — a body-wide drag only starts a dismiss once already scrolled
+  // to the top; the grabber bar itself always starts one regardless.
+  function closeAndReset() {
+    onClose();
+    setSize(null);
+  }
+
+  function animateClosed() {
+    const el = contentRef.current;
+    if (!el) {
+      closeAndReset();
+      return;
+    }
+    el.style.transition = `transform ${CLOSE_ANIM_MS}ms ease-in`;
+    el.style.transform = "translateY(100%)";
+    window.setTimeout(closeAndReset, CLOSE_ANIM_MS);
+  }
+
+  function startDismissDrag(e: React.PointerEvent<HTMLDivElement>, requireScrollTop: boolean) {
+    const el = contentRef.current;
+    if (!el) return;
+    if (requireScrollTop && el.scrollTop > 0) return;
+    const container = e.currentTarget;
+    const pointerId = e.pointerId;
+    const startY = e.clientY;
+    let captured = false;
+
+    const onMove = (ev: PointerEvent) => {
+      const dy = ev.clientY - startY;
+      if (!captured) {
+        if (dy <= 8) return;
+        captured = true;
+        el.style.transition = "none";
+        container.setPointerCapture(pointerId);
+      }
+      el.style.transform = `translateY(${Math.max(0, dy)}px)`;
+    };
+    const onUp = (ev: PointerEvent) => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      if (!captured) return;
+      container.releasePointerCapture(pointerId);
+      const dy = ev.clientY - startY;
+      if (dy > CLOSE_DRAG_THRESHOLD_PX) {
+        animateClosed();
+      } else {
+        el.style.transition = `transform ${CLOSE_ANIM_MS}ms cubic-bezier(0.22,1,0.36,1)`;
+        el.style.transform = "translateY(0px)";
+      }
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+  }
+
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(v) => {
-        if (!v) {
-          onClose();
-          setSize(null);
-        }
+        if (!v) animateClosed();
       }}
     >
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
-        <Dialog.Content className="fixed inset-0 z-50 overflow-y-auto bg-cream" aria-describedby={undefined}>
+        <Dialog.Content
+          ref={contentRef}
+          onPointerDown={(e) => startDismissDrag(e, true)}
+          className="fixed inset-x-0 bottom-0 z-50 mx-auto max-h-[92vh] w-full max-w-[480px] overflow-y-auto rounded-t-[20px] bg-cream data-[state=open]:animate-[lur-sheet-in_0.32s_cubic-bezier(0.22,1,0.36,1)] lg:max-w-[960px]"
+          aria-describedby={undefined}
+        >
           {product && (
-            <div className="mx-auto w-full max-w-[480px] px-4 pb-6 pt-4 lg:max-w-[960px] lg:px-16 lg:pb-10 lg:pt-8">
-              <Dialog.Close className="absolute right-4 top-4 z-10 flex h-9 w-9 flex-none items-center justify-center border-2 border-ink bg-cream text-2xl leading-none lg:right-8 lg:top-8">
-                ×
-              </Dialog.Close>
+            <div className="mx-auto w-full px-4 pb-6 pt-2 lg:px-16 lg:pb-10 lg:pt-4">
+              <div
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  startDismissDrag(e, false);
+                }}
+                className="flex touch-none justify-center py-2"
+                aria-hidden
+              >
+                <span className="h-1 w-10 bg-ink/30" />
+              </div>
 
               <div className="relative">
                 {/* The text panel overlaps the photo (no backdrop — transparent
