@@ -58,13 +58,24 @@ html {
   --radius-2xl: 0px;
 }
 
-body {
-  background: var(--color-cream);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-}
-h1, h2, h3, h4 {
-  font-family: var(--font-serif);
+/* Cascade layers, not just selector specificity, decide who wins here:
+   Tailwind's utility classes (font-dynamic included) live in @layer
+   utilities, and per the CSS spec an UNLAYERED rule beats every layered one
+   regardless of specificity — so these two rules previously sat unlayered
+   (after the plain :root block above) and silently out-ranked every
+   font-dynamic/font-sans className applied to a heading anywhere on the
+   site, no matter how many times the font was swapped. Wrapping them in
+   Tailwind's own base layer puts them back below @layer utilities, where a
+   className can actually override them as intended. */
+@layer base {
+  body {
+    background: var(--color-cream);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+  }
+  h1, h2, h3, h4 {
+    font-family: var(--font-serif);
+  }
 }
 
 @keyframes lur-heartbeat {
