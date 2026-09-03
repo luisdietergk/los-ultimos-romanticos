@@ -21,7 +21,7 @@ export function Partidos({ matches, now, teamCrestUrl }: { matches: DerivedMatch
     <RevealSection id="partidos" className="relative z-10 border-b-2 border-ink px-6 pb-[52px] pt-[34px] lg:px-16">
       <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-accent">NUESTROS PARTIDOS</div>
       <div className="my-3.5 h-[3px] w-[38px] bg-accent" />
-      <h2 className="mb-7 font-dynamic text-[36px] font-black uppercase leading-none tracking-tight lg:text-5xl">
+      <h2 className="mb-7 font-dynamic text-[36px] font-black uppercase leading-[1.08] tracking-tight lg:text-5xl">
         UNA HISTORIA QUE SIGUE JUGÁNDOSE.
       </h2>
 

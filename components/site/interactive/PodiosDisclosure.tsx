@@ -73,7 +73,7 @@ export function PodiosDisclosure({ categories }: { categories: PodiumCategory[] 
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen}>
       <Collapsible.Trigger className="flex w-full items-start justify-between gap-3 text-left">
-        <h2 className="font-dynamic text-[clamp(26px,7.6vw,34px)] font-normal uppercase leading-none">
+        <h2 className="font-dynamic text-[clamp(26px,7.6vw,34px)] font-normal uppercase leading-[1.08]">
           LOS NÚMEROS
           <br />
           DE LA TEMPORADA
