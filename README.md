@@ -42,5 +42,5 @@ Visit `http://localhost:3000` for the public site, `http://localhost:3000/admin`
 
 ## Scope notes
 
-- Tabla de posiciones, a real photo gallery, and a Contacto/Únete section were never finished in the original design (still a "SIGUE EN CAMINO" placeholder — see `components/site/ComingSoon.tsx`) and are out of scope for this build.
+- Tabla de posiciones, a real photo gallery, and a Contacto/Únete section were never finished in the original design and are out of scope for this build; the page ends after Tienda.
 - All editable content (matches, goals, roster, shop, kits, site settings) is a real Postgres-backed admin panel, replacing the original prototype's browser-only `localStorage` "Edit Mode."

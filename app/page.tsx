@@ -8,7 +8,6 @@ import Plantilla from "@/components/site/Plantilla";
 import Podios from "@/components/site/Podios";
 import Uniformes from "@/components/site/Uniformes";
 import Tienda from "@/components/site/Tienda";
-import { ComingSoon } from "@/components/site/ComingSoon";
 import { Footer } from "@/components/site/Footer";
 import {
   getSiteSettings,
@@ -52,7 +51,6 @@ export default async function HomePage() {
       <Podios roster={roster} allGoals={allGoals} />
       <Uniformes kits={kits} />
       <Tienda products={shop} />
-      <ComingSoon />
       <Footer
         crestUrl={settings.teamCrestUrl}
         tiktokUrl={settings.tiktokUrl}
