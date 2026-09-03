@@ -54,7 +54,7 @@ export function HeaderNav({ crestUrl }: { crestUrl: string | null }) {
       className="fixed inset-x-0 top-0 z-40 transition-transform duration-300 ease-out"
       style={{ transform: hidden && !open ? "translateY(-100%)" : "translateY(0)" }}
     >
-      <header className="flex items-center gap-3 bg-transparent px-4 py-2.5 text-ink lg:px-8">
+      <header className={`flex items-center gap-3 px-4 py-2.5 text-ink lg:px-8 ${open ? "bg-cream" : "bg-transparent"}`}>
         <div className="h-[41px] w-[34px] flex-none">
           {crestUrl && <Image src={crestUrl} alt="Escudo" width={68} height={82} className="h-full w-full object-contain" />}
         </div>
