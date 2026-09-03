@@ -24,7 +24,7 @@ export default function Tienda({ products }: { products: ShopProduct[] }) {
       <div className="px-6 lg:px-16">
         <div className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-accent">LA TIENDA</div>
         <div className="my-3.5 h-[3px] w-[38px] bg-accent" />
-        <h2 className="text-[clamp(26px,7.6vw,34px)] font-normal uppercase leading-none">
+        <h2 className="font-dynamic text-[clamp(26px,7.6vw,34px)] font-normal uppercase leading-none">
           LLEVA EL
           <br />
           ROMANCE PUESTO.

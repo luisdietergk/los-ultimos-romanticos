@@ -14,7 +14,7 @@ export default function Uniformes({ kits }: { kits: KitImage[] }) {
       <div className="px-6 lg:px-16">
         <div className="text-[10.5px] font-extrabold uppercase tracking-[0.24em] text-accent-light">NUESTRA PIEL</div>
         <div className="my-[13px] h-[3px] w-[38px] bg-accent-light" />
-        <h2 className="text-[clamp(28px,8.4vw,38px)] font-normal uppercase leading-[0.98]">
+        <h2 className="font-dynamic text-[clamp(28px,8.4vw,38px)] font-normal uppercase leading-[0.98]">
           TRES COLORES.
           <br />
           UN MISMO AMOR.
