@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { playerGoalCount } from "@/lib/derived";
+import { playerAssistCount, playerGoalCount } from "@/lib/derived";
 
 export default async function PlayersPage() {
   const [players, allGoals] = await Promise.all([
@@ -12,7 +12,7 @@ export default async function PlayersPage() {
     <div>
       <h1 className="font-serif text-3xl font-black">Plantilla</h1>
       <p className="mt-2 text-sm text-neutral-700">
-        Los goles se calculan a partir de los goles registrados en cada partido y no se editan aquí.
+        Los goles y las asistencias se calculan a partir de los goles registrados en cada partido y no se editan aquí.
       </p>
 
       <div className="mt-6 overflow-x-auto">
@@ -47,7 +47,7 @@ export default async function PlayersPage() {
                 </td>
                 <td className="py-2 pr-3">{p.position}</td>
                 <td className="py-2 pr-3">{p.pj}</td>
-                <td className="py-2 pr-3">{p.assists}</td>
+                <td className="py-2 pr-3">{playerAssistCount(p.id, allGoals)}</td>
                 <td className="py-2 pr-3 font-bold">{playerGoalCount(p.id, allGoals)}</td>
               </tr>
             ))}

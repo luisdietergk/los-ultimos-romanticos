@@ -109,7 +109,6 @@ model Player {
   quote         String?
   description   String?
   pj            Int     @default(0)
-  assists       Int     @default(0)
   photoUrl      String?
   sortOrder     Int     @default(0)
   isActive      Boolean @default(true)

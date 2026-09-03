@@ -132,11 +132,18 @@ export interface DerivedPlayer {
   dorsal: string;
   photoUrl: string | null;
   pj: number;
-  assists: number;
 }
 
 export function playerGoalCount(playerId: string, allGoals: Pick<DerivedGoal, "team" | "playerId">[]): number {
   return allGoals.filter((g) => g.team === "LUR" && g.playerId === playerId).length;
+}
+
+/** Assists are derived the same way goals are — counted from every goal
+ * whose shot-map "asistente" points at this player — instead of a manually
+ * typed-in number, so the admin picking an assist in the shot-map editor is
+ * the only thing that ever needs to happen for it to count. */
+export function playerAssistCount(playerId: string, allGoals: Pick<DerivedGoal, "team" | "assistPlayerId">[]): number {
+  return allGoals.filter((g) => g.team === "LUR" && g.assistPlayerId === playerId).length;
 }
 
 export interface PodiumPlace {
@@ -161,7 +168,7 @@ export interface PodiumCategory {
 export function podios(players: DerivedPlayer[], allGoals: DerivedGoal[]): PodiumCategory[] {
   const categories: { key: PodiumCategory["key"]; label: string; hint: string; unit: string; value: (p: DerivedPlayer) => number }[] = [
     { key: "goleadores", label: "GOLEADORES", hint: "GOLES", unit: "G", value: (p) => playerGoalCount(p.id, allGoals) },
-    { key: "asistencias", label: "ASISTENCIAS", hint: "ASISTENCIAS", unit: "A", value: (p) => p.assists },
+    { key: "asistencias", label: "ASISTENCIAS", hint: "ASISTENCIAS", unit: "A", value: (p) => playerAssistCount(p.id, allGoals) },
     { key: "partidos", label: "MÁS PARTIDOS", hint: "PARTIDOS JUGADOS", unit: "PJ", value: (p) => p.pj },
   ];
 

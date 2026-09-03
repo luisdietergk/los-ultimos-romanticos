@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRef } from "react";
-import { pitchPoint, type DerivedGoal } from "@/lib/derived";
+import { pitchPoint, playerAssistCount, type DerivedGoal } from "@/lib/derived";
 import type { FullPlayer } from "../Plantilla";
 
 const CLOSE_DRAG_THRESHOLD_PX = 90;
@@ -29,6 +29,7 @@ export function PlayerProfileModal({
 
   const goals = p ? allGoals.filter((g) => g.team === "LUR" && g.playerId === p.id) : [];
   const goalCount = goals.length;
+  const assistCount = p ? playerAssistCount(p.id, allGoals) : 0;
   const shots = goals.filter((g) => g.shotX != null && g.shotY != null);
   const dorsalLabel = p ? `#${p.dorsal.padStart(2, "0")}` : "";
   const shotsLabel = shots.length === 0 ? "SIN REGISTROS" : shots.length === 1 ? "1 TIRO" : `${shots.length} TIROS`;
@@ -157,8 +158,9 @@ export function PlayerProfileModal({
                   <div className="mt-0.5 text-[7.5px] font-bold uppercase tracking-[0.12em] text-neutral-500">AUTOMÁTICO</div>
                 </div>
                 <div className="border-l border-ink/15 px-2 py-2.5">
-                  <div className="font-serif text-2xl leading-none">{p.assists}</div>
+                  <div className="font-serif text-2xl leading-none">{assistCount}</div>
                   <div className="mt-1.5 text-[9px] font-extrabold uppercase tracking-[0.14em] text-neutral-600">ASISTENCIAS</div>
+                  <div className="mt-0.5 text-[7.5px] font-bold uppercase tracking-[0.12em] text-neutral-500">AUTOMÁTICO</div>
                 </div>
               </div>
 

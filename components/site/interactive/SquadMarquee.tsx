@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import Image from "next/image";
-import { playerGoalCount, type DerivedGoal } from "@/lib/derived";
+import { playerAssistCount, playerGoalCount, type DerivedGoal } from "@/lib/derived";
 import type { FullPlayer } from "../Plantilla";
 import { PlayerProfileModal } from "./PlayerProfileModal";
 
@@ -250,7 +250,7 @@ export function SquadMarquee({ roster, allGoals }: { roster: FullPlayer[]; allGo
                   <span className="mt-1 block text-[9.5px] font-bold uppercase tracking-[0.12em] text-neutral-600">{p.position}</span>
                 </span>
                 <span className="whitespace-nowrap text-[10.5px] font-bold tracking-[0.08em] text-neutral-700 tabular-nums">
-                  {p.pj} PJ · {playerGoalCount(p.id, allGoals)} G · {p.assists} A
+                  {p.pj} PJ · {playerGoalCount(p.id, allGoals)} G · {playerAssistCount(p.id, allGoals)} A
                 </span>
               </button>
             ))}
@@ -285,6 +285,7 @@ function PlayerCard({
   onViewProfile: () => void;
 }) {
   const goals = playerGoalCount(player.id, allGoals);
+  const assists = playerAssistCount(player.id, allGoals);
 
   return (
     <div
@@ -339,7 +340,7 @@ function PlayerCard({
       <div className="mt-1 flex items-baseline gap-3 text-[11px] font-bold tracking-[0.1em] text-neutral-700 tabular-nums">
         <span>{player.pj} PJ</span>
         <span>{goals} G</span>
-        <span>{player.assists} A</span>
+        <span>{assists} A</span>
       </div>
 
       {highlighted && (

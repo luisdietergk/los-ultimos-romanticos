@@ -48,7 +48,6 @@ export async function getRoster(): Promise<DerivedPlayer[]> {
     dorsal: p.dorsal,
     photoUrl: p.photoUrl,
     pj: p.pj,
-    assists: p.assists,
   }));
 }
 

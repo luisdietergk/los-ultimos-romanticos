@@ -16,7 +16,6 @@ export interface FullPlayer {
   quote: string | null;
   description: string | null;
   pj: number;
-  assists: number;
   photoUrl: string | null;
 }
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { playerGoalCount } from "@/lib/derived";
+import { playerAssistCount, playerGoalCount } from "@/lib/derived";
 import { updatePlayer } from "@/lib/actions/players";
 import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
@@ -13,6 +13,8 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
 
   const goals = await prisma.goal.findMany({ where: { playerId: id } });
   const goalCount = playerGoalCount(id, goals);
+  const assistGoals = await prisma.goal.findMany({ where: { assistPlayerId: id } });
+  const assistCount = playerAssistCount(id, assistGoals);
 
   return (
     <div>
@@ -71,32 +73,26 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
             className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider">PJ</label>
-            <input
-              type="number"
-              name="pj"
-              min={0}
-              defaultValue={player.pj}
-              className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Asistencias</label>
-            <input
-              type="number"
-              name="assists"
-              min={0}
-              defaultValue={player.assists}
-              className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
-            />
-          </div>
+        <div>
+          <label className="mb-1 block text-xs font-bold uppercase tracking-wider">PJ</label>
+          <input
+            type="number"
+            name="pj"
+            min={0}
+            defaultValue={player.pj}
+            className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
+          />
         </div>
 
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Goles (calculado)</label>
-          <div className="border border-ink/15 bg-neutral-100 px-2 py-1.5 text-sm text-neutral-700">{goalCount}</div>
+        <div className="grid grid-cols-2 gap-4 sm:col-span-2">
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Goles (calculado)</label>
+            <div className="border border-ink/15 bg-neutral-100 px-2 py-1.5 text-sm text-neutral-700">{goalCount}</div>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Asistencias (calculado)</label>
+            <div className="border border-ink/15 bg-neutral-100 px-2 py-1.5 text-sm text-neutral-700">{assistCount}</div>
+          </div>
         </div>
 
         <div className="sm:col-span-2">

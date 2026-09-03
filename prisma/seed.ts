@@ -124,7 +124,6 @@ async function main() {
         quote: p.q,
         description: p.desc,
         pj: p.pj,
-        assists: p.a,
         photoUrl,
         sortOrder: i,
       },
