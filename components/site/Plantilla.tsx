@@ -2,10 +2,11 @@ import { RevealSection } from "./shared/RevealSection";
 import { SquadMarquee } from "./interactive/SquadMarquee";
 import type { DerivedGoal } from "@/lib/derived";
 
-/** The full Prisma `Player` row shape (minus `sortOrder`/`isActive`) — richer
- * than `lib/derived.ts`'s `DerivedPlayer`, which only carries what the Podios
+/** The full Prisma `Player` row shape (minus `sortOrder`/`isActive`/
+ * `description`, which the public profile no longer shows) — richer than
+ * `lib/derived.ts`'s `DerivedPlayer`, which only carries what the Podios
  * leaderboards need. Plantilla's roster cards and profile modal need the
- * bio fields too (position, nationality, apodo, quote, description). */
+ * bio fields too (position, nationality, apodo, quote). */
 export interface FullPlayer {
   id: string;
   dorsal: string;
@@ -14,7 +15,6 @@ export interface FullPlayer {
   nationality: string;
   apodo: string | null;
   quote: string | null;
-  description: string | null;
   pj: number;
   photoUrl: string | null;
 }

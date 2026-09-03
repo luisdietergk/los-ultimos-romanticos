@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { playerAssistCount, playerGoalCount } from "@/lib/derived";
 import { updatePlayer } from "@/lib/actions/players";
+import { COUNTRIES } from "@/lib/countries";
 import { MediaUploadField } from "@/components/admin/MediaUploadField";
 
 export default async function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -58,12 +59,18 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
         </div>
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Nacionalidad</label>
-          <input
+          <select
             name="nationality"
             defaultValue={player.nationality}
             required
             className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
-          />
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Apodo</label>
@@ -100,16 +107,6 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
           <input
             name="quote"
             defaultValue={player.quote ?? ""}
-            className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
-          />
-        </div>
-
-        <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-bold uppercase tracking-wider">Descripción</label>
-          <textarea
-            name="description"
-            defaultValue={player.description ?? ""}
-            rows={4}
             className="w-full border border-ink/30 bg-transparent px-2 py-1.5 text-sm"
           />
         </div>

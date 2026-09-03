@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { useRef } from "react";
 import { pitchPoint, playerAssistCount, type DerivedGoal } from "@/lib/derived";
+import { countryFlag } from "@/lib/countries";
 import type { FullPlayer } from "../Plantilla";
 
 const CLOSE_DRAG_THRESHOLD_PX = 90;
@@ -136,6 +137,7 @@ export function PlayerProfileModal({
                     <div className="mt-2 flex items-center gap-1.5">
                       <span className="h-[5px] w-[5px] flex-none rotate-45 bg-accent" />
                       <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em]">{p.nationality}</span>
+                      {countryFlag(p.nationality) && <span aria-hidden>{countryFlag(p.nationality)}</span>}
                     </div>
                     {p.apodo && (
                       <div className="mt-2 font-serif text-[13px] italic leading-tight text-accent-hover">{p.apodo}</div>
@@ -163,12 +165,6 @@ export function PlayerProfileModal({
                   <div className="mt-0.5 text-[7.5px] font-bold uppercase tracking-[0.12em] text-neutral-500">AUTOMÁTICO</div>
                 </div>
               </div>
-
-              {p.description && (
-                <div className="border-b-2 border-ink px-4 py-3 text-[12px] font-medium leading-relaxed text-neutral-700">
-                  {p.description}
-                </div>
-              )}
 
               <div className="flex items-baseline gap-2.5 px-4 pb-0.5 pt-3">
                 <span className="text-[9.5px] font-extrabold uppercase tracking-[0.2em] text-accent">MAPA DE TIRO</span>
