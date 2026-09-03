@@ -69,7 +69,10 @@ export function Hero({ heroVideoUrl, taglineHtml }: { heroVideoUrl: string | nul
 
       <div className="relative z-10 lg:grid lg:grid-cols-[440px_1fr] lg:items-end lg:gap-12">
         <div className="lg:bg-cream/90 lg:p-6">
-          <h1 className="mt-[150px] font-dynamic text-[clamp(38px,11.8vw,55px)] uppercase leading-[1.08] tracking-[0.01em] text-ink lg:mt-0 lg:text-[72px]">
+          <h1
+            className="mt-[150px] font-dynamic text-[clamp(38px,11.8vw,55px)] uppercase leading-[1.08] tracking-[0.01em] text-ink lg:mt-0 lg:text-[72px]"
+            style={{ fontVariationSettings: '"opsz" 72', fontWeight: 900 }}
+          >
             LOS
             <br />
             ÚLTIMOS

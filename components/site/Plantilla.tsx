@@ -32,7 +32,10 @@ export default function Plantilla({ roster, allGoals }: { roster: FullPlayer[]; 
           CONOCE A LOS QUE DEFIENDEN ESTA HISTORIA CADA SEMANA.
         </div>
         <div className="my-3.5 h-[3px] w-[38px] bg-accent" />
-        <h2 className="font-dynamic text-[36px] font-black uppercase leading-[1.08] tracking-tight lg:text-5xl">
+        <h2
+          className="font-dynamic text-[36px] uppercase leading-[1.08] tracking-tight lg:text-5xl"
+          style={{ fontVariationSettings: '"opsz" 72', fontWeight: 900 }}
+        >
           LOS
           <br />
           ROMÁNTICOS
