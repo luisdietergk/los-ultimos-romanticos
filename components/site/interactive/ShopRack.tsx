@@ -303,7 +303,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
       <div
         ref={stageRef}
         onPointerDown={onPointerDown}
-        className="relative mt-5 h-[640px] touch-pan-y select-none overflow-hidden cursor-grab"
+        className="relative mt-5 h-[500px] touch-pan-y select-none overflow-hidden cursor-grab"
       >
         <div
           ref={railRef}
