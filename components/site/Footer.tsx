@@ -30,45 +30,33 @@ export function Footer({
           </div>
         </div>
 
-        <div className="mt-9 flex flex-col gap-3 lg:mt-0 lg:w-72">
-          {tiktokUrl && (
-            <a
-              href={tiktokUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-3 border-2 border-cream px-5 py-[18px] text-xs font-extrabold uppercase tracking-[0.12em] text-cream"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16.6 5.2c-.7-.7-1.1-1.7-1.1-2.7h-3v12.4a2.6 2.6 0 1 1-1.9-2.5v-3a5.6 5.6 0 1 0 4.9 5.5V9.1a6.9 6.9 0 0 0 3.6 1v-3a3.9 3.9 0 0 1-2.5-1.9z" />
-              </svg>
-              TIKTOK
-            </a>
-          )}
-          {instagramUrl && (
-            <a
-              href={instagramUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-3 border-2 border-cream px-5 py-[18px] text-xs font-extrabold uppercase tracking-[0.12em] text-cream"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="2" width="20" height="20" />
-                <circle cx="12" cy="12" r="4.2" />
-              </svg>
-              INSTAGRAM
-            </a>
-          )}
-          {gmailAddress && (
-            <a
-              href={`mailto:${gmailAddress}`}
-              className="flex items-center gap-3 border-2 border-cream px-5 py-[18px] text-xs font-extrabold uppercase tracking-[0.12em] text-cream"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="4" width="20" height="16" />
-                <path d="M3 6l9 7 9-7" />
-              </svg>
-              GMAIL
-            </a>
+        <div className="mt-9 flex flex-col gap-5 lg:mt-0 lg:w-72 lg:items-end">
+          {(tiktokUrl || instagramUrl || gmailAddress) && (
+            <div className="flex items-center gap-5">
+              {tiktokUrl && (
+                <a href={tiktokUrl} target="_blank" rel="noreferrer" aria-label="TikTok" className="text-cream opacity-90 hover:opacity-100">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M16.6 5.2c-.7-.7-1.1-1.7-1.1-2.7h-3v12.4a2.6 2.6 0 1 1-1.9-2.5v-3a5.6 5.6 0 1 0 4.9 5.5V9.1a6.9 6.9 0 0 0 3.6 1v-3a3.9 3.9 0 0 1-2.5-1.9z" />
+                  </svg>
+                </a>
+              )}
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noreferrer" aria-label="Instagram" className="text-cream opacity-90 hover:opacity-100">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="2" width="20" height="20" />
+                    <circle cx="12" cy="12" r="4.2" />
+                  </svg>
+                </a>
+              )}
+              {gmailAddress && (
+                <a href={`mailto:${gmailAddress}`} aria-label="Gmail" className="text-cream opacity-90 hover:opacity-100">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="2" y="4" width="20" height="16" />
+                    <path d="M3 6l9 7 9-7" />
+                  </svg>
+                </a>
+              )}
+            </div>
           )}
           {whatsapp && (
             <a
