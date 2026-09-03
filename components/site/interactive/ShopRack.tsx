@@ -355,9 +355,14 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
               // it here is what lets the View Transitions API match the two
               // elements up and morph between them. Every other product must
               // stay nameless at all times (see transitionProductId above).
+              // Hidden (not unmounted, so its rack position/ref stay intact
+              // for the return trip) while its sheet is open — otherwise the
+              // photo would show in both places at once instead of reading
+              // as "taken" off the rack.
               style={{
                 viewTransitionName:
                   p.id === transitionProductId && openId !== p.id ? `shop-photo-${p.id}` : undefined,
+                opacity: p.id === openId ? 0 : 1,
               }}
             >
               {p.photoUrl ? (
