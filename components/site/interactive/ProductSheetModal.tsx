@@ -76,24 +76,23 @@ export function ProductSheetModal({
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Same slide-up/rounded-corner/grabber-bar/drag-to-dismiss treatment as
-  // GoalMapModal.tsx and PlayerProfileModal.tsx. This sheet's content really
-  // can scroll (photo + gallery + sizes + perks), so — like the player
-  // profile — a body-wide drag only starts a dismiss once already scrolled
-  // to the top; the grabber bar itself always starts one regardless.
+  // GoalMapModal.tsx and PlayerProfileModal.tsx, but unlike those, this
+  // sheet's hero photo is also a View Transition participant (it morphs
+  // back into its rack thumbnail — see ShopRack.tsx's setOpenIdWithTransition).
+  // Sliding the whole sheet down to translateY(100%) and only *then*
+  // triggering that transition (after a setTimeout) meant the transition's
+  // "old" snapshot was captured already off-screen, so the photo would
+  // finish sliding down completely and only then snap back up into the
+  // rack — closing immediately, from wherever the drag/tap left the sheet,
+  // lets the browser morph the photo in one continuous arc back to the
+  // rack instead.
   function closeAndReset() {
     onClose();
     setSize(null);
   }
 
   function animateClosed() {
-    const el = contentRef.current;
-    if (!el) {
-      closeAndReset();
-      return;
-    }
-    el.style.transition = `transform ${CLOSE_ANIM_MS}ms ease-in`;
-    el.style.transform = "translateY(100%)";
-    window.setTimeout(closeAndReset, CLOSE_ANIM_MS);
+    closeAndReset();
   }
 
   function startDismissDrag(e: React.PointerEvent<HTMLDivElement>, requireScrollTop: boolean) {

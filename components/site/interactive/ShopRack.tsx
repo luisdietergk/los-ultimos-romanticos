@@ -271,10 +271,31 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
     window.addEventListener("pointercancel", onUp);
   };
 
+  // Nudges the tapped photo up a little (like lifting a hanger off a rail)
+  // before handing off to the View Transition's morph into the sheet, so
+  // opening reads as two connected beats instead of the photo just
+  // teleporting/growing in place.
+  const LIFT_PX = 12;
+  const LIFT_MS = 130;
+
   const handleOpen = (i: number, product: ShopProduct) => {
     if (draggedRef.current) return;
     if (i !== heroIndex(posRef.current, n)) glideTo(i);
-    setOpenIdWithTransition(product.id);
+    const photoWrap = itemRefs.current[i]?.querySelector<HTMLDivElement>("[data-shop-photo]");
+    if (!photoWrap) {
+      setOpenIdWithTransition(product.id);
+      return;
+    }
+    photoWrap.style.transition = `transform ${LIFT_MS}ms ease-out`;
+    photoWrap.style.transform = `translateY(-${LIFT_PX}px)`;
+    window.setTimeout(() => {
+      // Starts the view transition while still lifted, so its "old" snapshot
+      // captures the raised position — only clear the inline style after,
+      // once that snapshot has already been taken.
+      setOpenIdWithTransition(product.id);
+      photoWrap.style.transition = "";
+      photoWrap.style.transform = "";
+    }, LIFT_MS);
   };
 
   return (
@@ -327,6 +348,7 @@ export function ShopRack({ products }: { products: ShopProduct[] }) {
                 real aspect ratio means the image fills it top-to-bottom
                 with no such gap. */}
             <div
+              data-shop-photo
               className="relative mt-1.5 h-[370px]"
               // Claimed by the product sheet's hero image while it's open for
               // this product (see setOpenIdWithTransition above) — releasing
