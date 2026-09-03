@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Abril_Fatface, Archivo, Bebas_Neue } from "next/font/google";
+import { Abril_Fatface, Anton, Archivo } from "next/font/google";
 import "./globals.css";
 
 const abrilFatface = Abril_Fatface({
@@ -13,9 +13,11 @@ const archivo = Archivo({
   subsets: ["latin"],
 });
 
-// A bold, condensed display face for numeric/dynamic bits (the countdown)
-// that reads more "live scoreboard" than the storytelling serif headings.
-const bebasNeue = Bebas_Neue({
+// A genuinely heavy, modern display face (thick uniform strokes, not just
+// condensed like the previous Bebas Neue pick) for the bolder headings and
+// numeric/dynamic bits (the countdown) — reads more "poster" than the
+// storytelling serif headings.
+const anton = Anton({
   variable: "--font-countdown",
   weight: "400",
   subsets: ["latin"],
@@ -28,7 +30,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${abrilFatface.variable} ${archivo.variable} ${bebasNeue.variable} antialiased`}>
+    <html lang="es" className={`${abrilFatface.variable} ${archivo.variable} ${anton.variable} antialiased`}>
       <body className="bg-cream text-ink">{children}</body>
     </html>
   );
