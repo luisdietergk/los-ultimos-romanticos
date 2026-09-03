@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { n: "04", label: "Plantilla", href: "#plantilla" },
   { n: "05", label: "Números", href: "#podios" },
   { n: "06", label: "Uniformes", href: "#uniformes" },
+  { n: "07", label: "Tienda", href: "#tienda" },
 ];
 
 // Header hides once the visitor scrolls down past a small threshold, and
