@@ -312,7 +312,7 @@ function PlayerCard({
               alt={player.apodo ?? player.name}
               fill
               quality={90}
-              className="translate-y-[20px] scale-[1.5525] object-contain object-center"
+              className="translate-y-[20px] scale-[1.4283] object-contain object-center"
               sizes="330px"
             />
           ) : (
