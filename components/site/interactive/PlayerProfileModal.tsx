@@ -135,9 +135,8 @@ export function PlayerProfileModal({
                     </div>
                     <div className="mt-2 text-[9px] font-extrabold uppercase tracking-[0.16em] text-neutral-600">{p.position}</div>
                     <div className="mt-2 flex items-center gap-1.5">
-                      <span className="h-[5px] w-[5px] flex-none rotate-45 bg-accent" />
-                      <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em]">{p.nationality}</span>
                       {countryFlag(p.nationality) && <span aria-hidden>{countryFlag(p.nationality)}</span>}
+                      <span className="text-[10.5px] font-extrabold uppercase tracking-[0.12em]">{p.nationality}</span>
                     </div>
                     {p.apodo && (
                       <div className="mt-2 font-serif text-[13px] italic leading-tight text-accent-hover">{p.apodo}</div>
