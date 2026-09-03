@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         hostname: "**.public.blob.vercel-storage.com",
       },
     ],
+    // Next 16 restricts `quality` props to an explicit allowlist (default
+    // just [75]) — any value outside it is silently coerced to the closest
+    // allowed one, so a higher-quality image (e.g. SquadMarquee's enlarged
+    // player photos) needs its exact value added here to actually take effect.
+    qualities: [75, 90],
   },
 };
 

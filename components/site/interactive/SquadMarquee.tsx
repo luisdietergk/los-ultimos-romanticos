@@ -311,8 +311,9 @@ function PlayerCard({
               src={player.photoUrl}
               alt={player.apodo ?? player.name}
               fill
-              className="translate-y-[20px] scale-[1.35] object-contain object-center"
-              sizes="200px"
+              quality={90}
+              className="translate-y-[20px] scale-[1.5525] object-contain object-center"
+              sizes="330px"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center border border-dashed border-neutral-500 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-600">
