@@ -116,7 +116,7 @@ export function CalendarioTabs({
   now: Date;
   roster: DerivedPlayer[];
 }) {
-  const [tab, setTab] = useState<"cal" | "res">("cal");
+  const [tab, setTab] = useState<"cal" | "res">("res");
   const [fullCal, setFullCal] = useState(false);
   const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null);
   const [modalMatchId, setModalMatchId] = useState<string | null>(null);
