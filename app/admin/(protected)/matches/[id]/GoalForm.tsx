@@ -111,6 +111,9 @@ export function GoalForm({
   // the line the admin drags here matches what actually publishes.
   const lineX2 = team === "LUR" ? 294 : 6;
   const lineY2 = shotLineEnd(goalX, team === "LUR");
+  // Rival goals draw in black instead of accent red, matching how their
+  // context dots already render (see the RIVAL/LUR marker split below).
+  const teamColor = team === "RIVAL" ? "var(--color-ink)" : "var(--color-accent)";
 
   const action = isEdit ? updateGoal : addGoal;
 
@@ -303,7 +306,7 @@ export function GoalForm({
               y1={shotDot.y}
               x2={lineX2}
               y2={lineY2}
-              stroke="var(--color-accent)"
+              stroke={teamColor}
               strokeWidth="1.6"
               strokeDasharray="4 3"
             />
@@ -320,9 +323,9 @@ export function GoalForm({
           })}
           {assistDot && (
             <>
-              <circle cx={assistDot.x} cy={assistDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
+              <circle cx={assistDot.x} cy={assistDot.y} r="7.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="2.5" />
               {assistDorsal && (
-                <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
+                <text x={assistDot.x} y={assistDot.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill={teamColor}>
                   {assistDorsal}
                 </text>
               )}
@@ -331,14 +334,14 @@ export function GoalForm({
           {shotDot &&
             (scorerDorsal ? (
               <>
-                <circle cx={shotDot.x} cy={shotDot.y} r="8.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
-                <text x={shotDot.x} y={shotDot.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
+                <circle cx={shotDot.x} cy={shotDot.y} r="8.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="3" />
+                <text x={shotDot.x} y={shotDot.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill={teamColor}>
                   {scorerDorsal}
                 </text>
               </>
             ) : (
               <>
-                <circle cx={shotDot.x} cy={shotDot.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
+                <circle cx={shotDot.x} cy={shotDot.y} r="7.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="3" />
                 <circle cx={shotDot.x} cy={shotDot.y} r="3" fill="var(--color-ink)" />
               </>
             ))}

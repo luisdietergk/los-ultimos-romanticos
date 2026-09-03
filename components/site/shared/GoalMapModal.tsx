@@ -63,6 +63,9 @@ export function GoalMapModal({
   // The scorer's own dot only carries a dorsal number when it's a real LUR
   // player — a rival's goal has no roster/dorsal to show.
   const scorerDorsal = g && g.isLur && g.dorsalLabel !== "#—" ? g.dorsalLabel.replace("#", "") : null;
+  // Rival goals draw their shot/assist points in black instead of accent
+  // red, matching how their context dots already render.
+  const teamColor = g?.isLur === false ? "var(--color-ink)" : "var(--color-accent)";
 
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -196,7 +199,7 @@ export function GoalMapModal({
                       y1={assist.y}
                       x2={shot!.x}
                       y2={shot!.y}
-                      stroke="var(--color-accent)"
+                      stroke={teamColor}
                       strokeWidth="1.6"
                       strokeDasharray="0.045 0.035"
                       pathLength={1}
@@ -211,7 +214,7 @@ export function GoalMapModal({
                         y1={shot!.y}
                         x2={lineX2}
                         y2={lineY2}
-                        stroke="var(--color-accent)"
+                        stroke={teamColor}
                         strokeWidth="1.6"
                         strokeDasharray="0.045 0.035"
                         pathLength={1}
@@ -222,7 +225,7 @@ export function GoalMapModal({
                           an assist point to start from — otherwise the
                           marching dashes above already carry that cue. */}
                       {assist && (
-                        <circle r="4.5" fill="var(--color-accent)">
+                        <circle r="4.5" fill={teamColor}>
                           <animateMotion
                             dur="1.8s"
                             repeatCount="indefinite"
@@ -232,9 +235,9 @@ export function GoalMapModal({
                       )}
                       {assist && (
                         <>
-                          <circle cx={assist.x} cy={assist.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="2.5" />
+                          <circle cx={assist.x} cy={assist.y} r="7.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="2.5" />
                           {g!.assistDorsal && (
-                            <text x={assist.x} y={assist.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill="var(--color-accent)">
+                            <text x={assist.x} y={assist.y + 3} textAnchor="middle" fontSize="8" fontWeight="bold" fill={teamColor}>
                               {g!.assistDorsal}
                             </text>
                           )}
@@ -242,14 +245,14 @@ export function GoalMapModal({
                       )}
                       {scorerDorsal ? (
                         <>
-                          <circle cx={shot!.x} cy={shot!.y} r="8.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
-                          <text x={shot!.x} y={shot!.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill="var(--color-accent)">
+                          <circle cx={shot!.x} cy={shot!.y} r="8.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="3" />
+                          <text x={shot!.x} y={shot!.y + 3.5} textAnchor="middle" fontSize="9" fontWeight="bold" fill={teamColor}>
                             {scorerDorsal}
                           </text>
                         </>
                       ) : (
                         <>
-                          <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke="var(--color-accent)" strokeWidth="3" />
+                          <circle cx={shot!.x} cy={shot!.y} r="7.5" fill="var(--color-cream)" stroke={teamColor} strokeWidth="3" />
                           <circle cx={shot!.x} cy={shot!.y} r="3" fill="var(--color-ink)" />
                         </>
                       )}
