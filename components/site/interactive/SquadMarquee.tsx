@@ -297,7 +297,7 @@ function PlayerCard({
           onTap();
         }
       }}
-      className={`relative w-[236px] flex-none cursor-pointer border-l border-ink/15 px-4 pb-1 pt-3.5 text-left transition-transform duration-300 ease-out ${
+      className={`relative w-[236px] flex-none cursor-pointer px-4 pb-1 pt-3.5 text-left transition-transform duration-300 ease-out ${
         highlighted ? "z-10 scale-[1.15]" : "z-0"
       }`}
     >
@@ -307,7 +307,7 @@ function PlayerCard({
         </div>
         <div className={`absolute inset-x-3.5 bottom-0 top-[26px] z-[1] overflow-hidden ${player.photoUrl ? "" : "bg-neutral-200"}`}>
           {player.photoUrl ? (
-            <Image src={player.photoUrl} alt={player.apodo ?? player.name} fill className="object-cover object-[center_top]" sizes="200px" />
+            <Image src={player.photoUrl} alt={player.apodo ?? player.name} fill className="object-contain object-center" sizes="200px" />
           ) : (
             <div className="flex h-full w-full items-center justify-center border border-dashed border-neutral-500 text-center text-[10px] font-semibold uppercase tracking-[0.1em] text-neutral-600">
               Sin foto
